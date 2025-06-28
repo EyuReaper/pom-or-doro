@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pom-or-doro Options</title>
+    <link rel="stylesheet" href="styles/options.css" />
+</head>
+<body>
+    <div class="options-container">
+        <h2>Options</h2>
+        <label>
+            Work Duration (minutes):
+            <input type="number" id="work-duration" min="1" max="120" />
+        </label>
+        <label>
+            Break Duration (minutes):
+            <input type="number" id="break-duration" min="1" max="60" />
+        </label>
+        <button id="save-btn">Save</button>
+        <div id="status-msg"></div>
+    </div>
+    <script src="options.js"></script>
+</body>
+</html>

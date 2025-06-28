@@ -1,0 +1,76 @@
+$options-bg: #f8f9fa;
+$options-border: #e0e0e0;
+$options-primary: #e57373;
+$options-accent: #64b5f6;
+$options-radius: 10px;
+
+.options-container {
+  background: #f8f9fa;
+  max-width: 350px;
+  margin: 40px auto;
+  padding: 2rem 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  border: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.options-container h2 {
+  text-align: center;
+  color: #e57373;
+  margin-bottom: 1.5rem;
+  letter-spacing: 1px;
+}
+
+.options-container label {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.2rem;
+  font-size: 1rem;
+  color: #333;
+}
+
+.options-container input[type="number"] {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  font-size: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.options-container input[type="number"]:focus {
+  border-color: #64b5f6;
+  outline: none;
+}
+
+#save-btn {
+  background: #e57373;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 0.7rem 0;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.2s;
+}
+
+#save-btn:hover {
+  background: #d15555;
+}
+
+#status-msg {
+  margin-top: 1rem;
+  min-height: 1.2em;
+  text-align: center;
+  color: #64b5f6;
+  font-weight: 500;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+}
