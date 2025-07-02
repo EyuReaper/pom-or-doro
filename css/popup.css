@@ -1,0 +1,34 @@
+:root {
+  --bg: #fff;
+  --text: #222;
+  --accent: #e57373;
+  --timer-bg: #f8f9fa;
+}
+.theme-dark {
+  --bg: #23272f;
+  --text: #f8f9fa;
+  --accent: #64b5f6;
+  --timer-bg: #2c313a;
+}
+.theme-ocean {
+  --bg: #e0f7fa;
+  --text: #006064;
+  --accent: #00bcd4;
+  --timer-bg: #b2ebf2;
+}
+.theme-forest {
+  --bg: #e8f5e9;
+  --text: #1b5e20;
+  --accent: #43a047;
+  --timer-bg: #c8e6c9;
+}
+.pomodoro-container {
+  background: var(--bg);
+  color: var(--text);
+  /* ...other styles... */
+}
+.timer-display {
+  background: var(--timer-bg);
+  color: var(--accent);
+  /* ...other styles... */
+}

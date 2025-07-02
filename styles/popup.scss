@@ -1,0 +1,80 @@
+:root {
+  --bg: #fff;
+  --text: #222;
+  --accent: #e57373;
+  --timer-bg: #f8f9fa;
+}
+
+.theme-dark {
+  --bg: #23272f;
+  --text: #f8f9fa;
+  --accent: #64b5f6;
+  --timer-bg: #2c313a;
+}
+
+.theme-ocean {
+  --bg: #e0f7fa;
+  --text: #006064;
+  --accent: #00bcd4;
+  --timer-bg: #b2ebf2;
+}
+
+.theme-forest {
+  --bg: #e8f5e9;
+  --text: #1b5e20;
+  --accent: #43a047;
+  --timer-bg: #c8e6c9;
+}
+
+.pomodoro-container {
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  min-width: 320px;
+  transition: background 0.5s;
+}
+
+.timer-display {
+  background: var(--timer-bg);
+  color: var(--accent);
+  font-size: 3rem;
+  text-align: center;
+  border-radius: 12px;
+  margin: 1.5rem 0;
+  padding: 1.2rem 0;
+  letter-spacing: 2px;
+  transition: background 0.5s, color 0.5s;
+}
+
+.controls button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.7rem 1.2rem;
+  margin: 0 0.3rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.theme-switcher {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+.pomodoro-container {
+  background: linear-gradient(120deg, var(--bg) 0%, var(--timer-bg) 100%);
+  animation: bg-move 8s ease-in-out infinite alternate;
+}
+
+@keyframes bg-move {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}

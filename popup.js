@@ -5,61 +5,40 @@ const startBtn = document.getElementById('start-btn');
 const pauseBtn = document.getElementById('pause-btn');
 const resetBtn = document.getElementById('reset-btn');
 const sessionInfo = document.getElementById('session-info');
+const themeSelect = document.getElementById('theme-select');
 
-let timer = 1500; // 25 minutes in seconds
-let interval = null;
-let session = 1;
-let isRunning = false;
-
-function updateDisplay() {
-    const minutes = String(Math.floor(timer / 60)).padStart(2, '0');
-    const seconds = String(timer % 60).padStart(2, '0');
+function updateDisplay({ timeLeft, pomodoroCount, isPaused }) {
+    const minutes = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+    const seconds = String(timeLeft % 60).padStart(2, '0');
     timerDisplay.textContent = `${minutes}:${seconds}`;
-    sessionInfo.textContent = `Session: ${session}`;
+    sessionInfo.textContent = `Session: ${pomodoroCount + 1}`;
+    startBtn.disabled = !isPaused;
+    pauseBtn.disabled = isPaused;
 }
 
-function startTimer() {
-    if (isRunning) return;
-    isRunning = true;
-    startBtn.disabled = true;
-    pauseBtn.disabled = false;
-    interval = setInterval(() => {
-        if (timer > 0) {
-            timer--;
-            updateDisplay();
-        } else {
-            clearInterval(interval);
-            isRunning = false;
-            startBtn.disabled = false;
-            pauseBtn.disabled = true;
-            session++;
-            timer = 1500; // Reset for next session
-            updateDisplay();
-            // Optionally, add notification or sound here
-        }
-    }, 1000);
-}
+// Request current timer state on popup open
+chrome.runtime.sendMessage({ action: 'getTimerState' }, (state) => {
+    if (state) updateDisplay(state);
+});
 
-function pauseTimer() {
-    if (!isRunning) return;
-    isRunning = false;
-    clearInterval(interval);
-    startBtn.disabled = false;
-    pauseBtn.disabled = true;
-}
+// Listen for timer updates from background
+chrome.runtime.onMessage.addListener((msg) => {
+    if (msg.action === 'timerUpdate') {
+        updateDisplay(msg);
+    }
+});
 
-function resetTimer() {
-    isRunning = false;
-    clearInterval(interval);
-    timer = 1500;
-    updateDisplay();
-    startBtn.disabled = false;
-    pauseBtn.disabled = true;
-}
+// Button actions
+startBtn.addEventListener('click', () => chrome.runtime.sendMessage({ action: 'start' }));
+pauseBtn.addEventListener('click', () => chrome.runtime.sendMessage({ action: 'pause' }));
+resetBtn.addEventListener('click', () => chrome.runtime.sendMessage({ action: 'reset' }));
 
-startBtn.addEventListener('click', startTimer);
-pauseBtn.addEventListener('click', pauseTimer);
-resetBtn.addEventListener('click', resetTimer);
-
-// Initialize display
-updateDisplay();
+// Theme logic (as before)
+chrome.storage.sync.get({ theme: 'light' }, ({ theme }) => {
+    document.body.className = `theme-${theme}`;
+    themeSelect.value = theme;
+});
+themeSelect.addEventListener('change', () => {
+    document.body.className = `theme-${themeSelect.value}`;
+    chrome.storage.sync.set({ theme: themeSelect.value });
+});

@@ -7,7 +7,7 @@
         <link rel="stylesheet" href="dist/styles/popup.css" />
         <title>Pom-or-doro</title>
     </head>
-    <body>
+    <body theme="light", theme="dark", theme="ocean", theme="forest">
         <div class="pomodoro-container">
             <h1>Pom-or-doro</h1>
             <div class="timer-display" id="timer-display">25:00</div>
@@ -17,6 +17,16 @@
                 <button id="reset-btn">Reset</button>
             </div>
             <div class="session-info" id="session-info">Session: 1</div>
+            <div class="theme-switcher">
+                <label for="theme-select">Themes</label>
+                <select id="theme-select">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="ocean">Ocean</option>
+                    <option value="forest">Forest</option>
+                    </select>   
+
+            </div>
         </div>
         <script src="popup.js"></script>
     </body>
