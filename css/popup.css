@@ -1,3 +1,4 @@
+@import 'variables';
 :root {
   --bg: #fff;
   --text: #222;
@@ -24,11 +25,10 @@
 }
 .pomodoro-container {
   background: var(--bg);
-  color: var(--text);
-  /* ...other styles... */
+  border-radius: 10px;
+  padding: 1.5rem;
 }
 .timer-display {
   background: var(--timer-bg);
   color: var(--accent);
-  /* ...other styles... */
 }

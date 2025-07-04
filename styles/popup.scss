@@ -1,3 +1,6 @@
+@import '_variables';
+@import 'main';
+
 :root {
   --bg: #fff;
   --text: #222;
@@ -27,13 +30,9 @@
 }
 
 .pomodoro-container {
-  background: var(--bg);
-  color: var(--text);
-  border-radius: 16px;
-  padding: 2rem 1.5rem;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-  min-width: 320px;
-  transition: background 0.5s;
+  background: $bg-light;
+  border-radius: $radius;
+  padding: $padding;
 }
 
 .timer-display {
@@ -68,10 +67,6 @@
 .theme-switcher {
   margin-top: 1.5rem;
   text-align: center;
-}
-.pomodoro-container {
-  background: linear-gradient(120deg, var(--bg) 0%, var(--timer-bg) 100%);
-  animation: bg-move 8s ease-in-out infinite alternate;
 }
 
 @keyframes bg-move {

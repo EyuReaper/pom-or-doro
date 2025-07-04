@@ -1,9 +1,3 @@
-$options-bg: #f8f9fa;
-$options-border: #e0e0e0;
-$options-primary: #e57373;
-$options-accent: #64b5f6;
-$options-radius: 10px;
-
 .options-container {
   background: #f8f9fa;
   max-width: 350px;

@@ -1,0 +1,26 @@
+// Flex center: centers content both vertically and horizontally
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// Transition: apply transition to any property (default: all 0.2s ease)
+@mixin transition($props: all 0.2s ease) {
+  transition: $props;
+}
+
+// Button style: customizable button appearance
+@mixin button-style($bg, $color: #fff, $radius: 5px, $padding: 0.7rem 1.2rem) {
+  background: $bg;
+  color: $color;
+  border: none;
+  border-radius: $radius;
+  padding: $padding;
+  cursor: pointer;
+  font-size: 1rem;
+  @include transition(background 0.2s);
+}
+
+// Usage example (in your component SCSS):
+// .my-btn { @include button-style($primary); }
