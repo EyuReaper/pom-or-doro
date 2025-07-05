@@ -1,5 +1,5 @@
-@import '_variables';
-@import 'main';
+@use 'variables';
+@use 'mixins';
 
 :root {
   --bg: #fff;
@@ -30,9 +30,11 @@
 }
 
 .pomodoro-container {
-  background: $bg-light;
-  border-radius: $radius;
-  padding: $padding;
+  background: linear-gradient(120deg, var(--bg, #fff) 0%, var(--timer-bg) 100%);
+  background-size: 200% 200%;
+  animation: bg-move 8s ease-in-out infinite alternate;
+  border-radius: variables.$radius;
+  padding: variables.$padding;
 }
 
 .timer-display {

@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "A Pomodoro timer Chrome extension",
   "scripts": {
-    "build:css": "sass src/styles:css",
+    "build:css": "sass styles/main.scss css/main.css",
+    "sass:watch": "sass --watch styles/main.scss:css/main.css",
     "lint": "eslint src",
     "format": "prettier --write ."
   },
