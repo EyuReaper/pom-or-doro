@@ -1,0 +1,62 @@
+{
+  "appName": {
+    "message": "ፖሞር-ዶሮ"
+  },
+  "appDesc": {
+    "message": "ፖሞዶሮ ቴክኒኩን በመጠቀም  የስራ ቅደም ተከተል እና ዕረፍት ጊዜን  የሚያቀናብር የክሮም ቅጥያ ነው።"
+  },
+  "workDuration": {
+    "message": "የስራ ጊዜ (በደቂቃዎች)"
+  },
+  "shortBreak": {
+    "message": "አጭር ዕረፍት (በደቂቃዎች)"
+  },
+  "longBreak": {
+    "message": "ረጅም ዕረፍት (ደቂቃዎች)"
+  },
+  "pomosBeforeLong": {
+    "message": "ከረጅም ዕረፍት በፊት የሚደርሱ ፖሞዶሮዎች"
+  },
+  "theme": {
+    "message": "ገጽታ"
+  },
+  "notificationSound": {
+    "message": "የማስታወቂያ ድምፅ"
+  },
+  "language": {
+    "message": "ቋንቋ"
+  },
+  "save": {
+    "message": "አስቀምጥ"
+  },
+  "reset": {
+    "message": "ዳግም አስጀምር"
+  },
+  "settings": {
+    "message": "ቅንብሮች"
+  },
+  "start": {
+    "message": "ጀምር"
+  },
+  "pause": {
+    "message": "አቁም"
+  },
+  "session": {
+    "message": "ክፍለ "
+  },
+  "notificationWorkTitle": {
+    "message": "የስራ ጊዜ ተጠናቋል!"
+  },
+  "notificationWorkMessage": {
+    "message": "አሁን ዕረፍት ይውሰዱ።"
+  },
+  "notificationBreakTitle": {
+    "message": "ዕረፍት ተጠናቋል!"
+  },
+  "notificationBreakMessage": {
+    "message": "ወደ ስራዎ ተመለሱ።"
+  },
+  "statusSaved": {
+    "message": "ቅንብሮች ተቀምጠዋል!"
+  }
+}

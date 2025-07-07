@@ -1,0 +1,62 @@
+{
+  "appName": {
+    "message": "Pom-or-doro"
+  },
+  "appDesc": {
+    "message": "A Pomodoro timer Chrome extension that helps you focus and take breaks."
+  },
+  "workDuration": {
+    "message": "Work Duration (minutes)"
+  },
+  "shortBreak": {
+    "message": "Short Break (minutes)"
+  },
+  "longBreak": {
+    "message": "Long Break (minutes)"
+  },
+  "pomosBeforeLong": {
+    "message": "Pomodoros Before Long Break"
+  },
+  "theme": {
+    "message": "Theme"
+  },
+  "notificationSound": {
+    "message": "Notification Sound"
+  },
+  "language": {
+    "message": "Language"
+  },
+  "save": {
+    "message": "Save"
+  },
+  "reset": {
+    "message": "Reset"
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "start": {
+    "message": "Start"
+  },
+  "pause": {
+    "message": "Pause"
+  },
+  "session": {
+    "message": "Session"
+  },
+  "notificationWorkTitle": {
+    "message": "Work session complete!"
+  },
+  "notificationWorkMessage": {
+    "message": "Time for a break!"
+  },
+  "notificationBreakTitle": {
+    "message": "Break over!"
+  },
+  "notificationBreakMessage": {
+    "message": "Back to work!"
+  },
+  "statusSaved": {
+    "message": "Options saved!"
+  }
+}
