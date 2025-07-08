@@ -98,7 +98,11 @@ function applyLanguage(lang) {
     resetBtn.textContent = lang === 'am' ? 'ዳግም አስጀምር' : 'Reset';
     sessionInfo.textContent = lang === 'am' ? 'ክፍለ-ጊዜ: 1' : 'Session: 1';
     document.querySelector('.theme-switcher label').textContent = lang === 'am' ? 'ገጽታ' : 'Themes';
-    document.querySelector('.language-switcher label').textContent = lang === 'am' ? 'ቋንቋ' : 'Language';
+  document.querySelector('.language-switcher label').textContent = lang === 'am' ? 'ቋንቋ' : 'Language';
+  document.getElementById('about-btn').textContent = lang === 'am' ? 'ስለ ፖሞር-ዶሮ' : 'About Pom-or-doro';
+  document.getElementById('about-title').textContent = lang === 'am'
+    ? '“ፖም” እና “ዶሮ” ምን ማለት ናቸው?'
+    : 'What do "Pom" and "Doro" mean?';
 }
 
 // Load language on popup open
@@ -126,6 +130,10 @@ chrome.storage.sync.get(
     selectedSound: 'standard'
   },
   (settings) => {
+    if (chrome.runtime.lastError) {
+      alert('Failed to load settings.');
+      return;
+    }
     // Apply theme
     applyTheme(settings.theme);
     // Apply language
