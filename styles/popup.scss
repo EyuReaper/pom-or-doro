@@ -134,6 +134,71 @@ h1 {
   outline: none;
 }
 
+.language-switcher {
+  margin-top: 1.2rem;
+  text-align: center;
+}
+
+.language-switcher label {
+  font-size: 1rem;
+  color: var(--text, #222);
+  margin-right: 0.5rem;
+}
+
+.language-switcher select {
+  padding: 0.4rem 0.8rem;
+  border-radius: variables.$radius;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  background: #fff;
+  color: #222;
+  transition: border 0.2s;
+}
+
+.language-switcher select:focus {
+  border-color: var(--accent, #e57373);
+  outline: none;
+}
+
+.switchers-row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 1.2rem;
+  margin-top: 1.2rem;
+}
+
+.theme-switcher,
+.language-switcher {
+  margin: 0;
+  text-align: left;
+}
+
+.theme-switcher label,
+.language-switcher label {
+  display: block;
+  font-size: 1rem;
+  color: var(--text, #222);
+  margin-bottom: 0.2rem;
+}
+
+.theme-switcher select,
+.language-switcher select {
+  padding: 0.4rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  background: #fff;
+  color: #222;
+  transition: border 0.2s;
+}
+
+.theme-switcher select:focus,
+.language-switcher select:focus {
+  border-color: var(--accent, #e57373);
+  outline: none;
+}
+
 @media (max-width: 500px) {
   .pomodoro-container {
     margin-top: 10px !important;
@@ -144,5 +209,10 @@ h1 {
   .controls {
     flex-direction: column;
     gap: 0.7rem;
+  }
+  .switchers-row {
+    flex-direction: row;
+    gap: 0.5rem;
+    align-items: stretch;
   }
 }

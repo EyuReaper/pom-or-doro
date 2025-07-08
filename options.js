@@ -36,19 +36,19 @@ function loadOptions() {
 
 // Save options to storage
 function saveOptions() {
-    const settings = {
-        workTime: parseInt(workInput.value, 10),
-        shortBreakTime: parseInt(shortBreakInput.value, 10),
-        longBreakTime: parseInt(longBreakInput.value, 10),
-        pomodoroCountForLongBreak: parseInt(pomosBeforeLongInput.value, 10),
-        theme: themeSelect.value,
-        selectedSound: soundSelect.value,
-        language: languageSelect.value
-    };
-    chrome.runtime.sendMessage({ action: 'saveSettings', settings }, () => {
-        statusMsg.textContent = chrome.i18n.getMessage('statusSaved') || 'Options saved!';
-        setTimeout(() => (statusMsg.textContent = ''), 2000);
-    });
+  const settings = {
+    workTime: parseInt(workInput.value, 10),
+    shortBreakTime: parseInt(shortBreakInput.value, 10),
+    longBreakTime: parseInt(longBreakInput.value, 10),
+    pomodoroCountForLongBreak: parseInt(pomosBeforeLongInput.value, 10),
+    theme: themeSelect.value,
+    selectedSound: soundSelect.value,
+    language: languageSelect.value
+  };
+  chrome.storage.sync.set(settings, () => {
+    statusMsg.textContent = 'Options saved!';
+    setTimeout(() => (statusMsg.textContent = ''), 2000);
+  });
 }
 
 // Reset options to defaults
