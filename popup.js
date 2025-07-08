@@ -157,8 +157,18 @@ aboutBtn.addEventListener('click', () => {
 closeAbout.addEventListener('click', () => {
   aboutModal.style.display = 'none';
 });
+closeAbout.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    aboutModal.style.display = 'none';
+  }
+});
 window.addEventListener('click', (e) => {
   if (e.target === aboutModal) aboutModal.style.display = 'none';
+});
+window.addEventListener('keydown', (e) => {
+  if (aboutModal.style.display === 'flex' && e.key === 'Escape') {
+    aboutModal.style.display = 'none';
+  }
 });
 
 // Reset timer display to initial work amount
