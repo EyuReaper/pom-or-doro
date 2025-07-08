@@ -1,70 +1,100 @@
 .options-container {
-  background: #f8f9fa;
-  max-width: 350px;
-  margin: 40px auto;
-  padding: 2rem 1.5rem;
+  background: var(--bg, #f8f9fa);
+  max-width: 420px;
+  margin: 48px auto;
+  padding: 2.5rem 2rem;
   border-radius: 10px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
   border: 1px solid #e0e0e0;
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  font-family: 'Segoe UI', Arial, sans-serif;
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: var(--text, #222);
+  transition: background 0.3s;
 }
 
 .options-container h2 {
   text-align: center;
-  color: #e57373;
-  margin-bottom: 1.5rem;
+  color: var(--accent, #e57373);
+  margin-bottom: 2rem;
   letter-spacing: 1px;
+  font-size: 2rem;
+  font-weight: 700;
 }
 
 .options-container label {
   display: flex;
   flex-direction: column;
   margin-bottom: 1.2rem;
-  font-size: 1rem;
-  color: #333;
+  font-weight: 500;
+  color: var(--text, #222);
+  font-size: 1.08rem;
 }
 
-.options-container input[type="number"] {
+.options-container input,
+.options-container select {
   margin-top: 0.5rem;
-  padding: 0.5rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 5px;
+  padding: 0.6rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
   font-size: 1rem;
-  width: 100%;
-  box-sizing: border-box;
-  transition: border-color 0.2s;
+  background: #fff;
+  color: #222;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
-.options-container input[type="number"]:focus {
-  border-color: #64b5f6;
+.options-container input:focus,
+.options-container select:focus {
+  border-color: var(--accent, #e57373);
   outline: none;
+  box-shadow: 0 0 0 2px rgba(230, 115, 115, 0.15);
 }
 
-#save-btn {
-  background: #e57373;
+.options-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+
+.options-actions button {
+  background: var(--accent, #e57373);
   color: #fff;
   border: none;
   border-radius: 5px;
-  padding: 0.7rem 0;
-  font-size: 1.1rem;
+  padding: 0.7rem 1.2rem;
   cursor: pointer;
-  margin-top: 0.5rem;
-  transition: background 0.2s;
-}
-
-#save-btn:hover {
-  background: #d15555;
-}
-
-#status-msg {
-  margin-top: 1rem;
-  min-height: 1.2em;
-  text-align: center;
-  color: #64b5f6;
-  font-weight: 500;
   font-size: 1rem;
-  letter-spacing: 0.5px;
+  transition: background 0.2s;
+  margin-left: 0.7rem;
+  font-size: 1.08rem;
+  padding: 0.7rem 1.5rem;
+  font-weight: 600;
+  border-radius: 10px;
 }
+
+.status-message {
+  text-align: center;
+  color: var(--accent, #e57373);
+  margin-top: 1.2rem;
+  font-size: 1.08rem;
+  min-height: 1.5em;
+}
+
+@media (max-width: 500px) {
+  .options-container {
+    max-width: 98vw;
+    padding: 1.2rem 0.5rem;
+  }
+  .options-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .options-actions button {
+    margin: 0.5rem 0 0 0;
+    width: 100%;
+  }
+}
+
+/*# sourceMappingURL=options.css.map */

@@ -1,33 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="stylesheet" href="dist/styles/popup.css" />
-        <title>Pom-or-doro</title>
-    </head>
-    <body theme="light", theme="dark", theme="ocean", theme="forest">
-        <div class="pomodoro-container">
-            <h1>Pom-or-doro</h1>
-            <div class="timer-display" id="timer-display">25:00</div>
-            <div class="controls">
-                <button id="start-btn">Start</button>
-                <button id="pause-btn" disabled>Pause</button>
-                <button id="reset-btn">Reset</button>
-            </div>
-            <div class="session-info" id="session-info">Session: 1</div>
-            <div class="theme-switcher">
-                <label for="theme-select">Themes</label>
-                <select id="theme-select">
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
-                    <option value="ocean">Ocean</option>
-                    <option value="forest">Forest</option>
-                    </select>   
-
-            </div>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pom-or-doro</title>
+    <link rel="stylesheet" href="css/popup.css" />
+    <!-- Optional: Google Fonts for modern look -->
+    <link href="https://fonts.googleapis.com/css?family=Lily+Script+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Work+Sans:400,100&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="pomodoro-container">
+        <h1>Pom-or-doro</h1>
+        <div class="timer-display" id="timer-display">25:00</div>
+        <div class="controls">
+            <button id="start-btn">Start</button>
+            <button id="pause-btn" disabled>Pause</button>
+            <button id="reset-btn">Reset</button>
         </div>
-        <script src="popup.js"></script>
-    </body>
+        <div class="session-info" id="session-info">Session: 1</div>
+        <div class="theme-switcher">
+            <label for="theme-select">Themes</label>
+            <select id="theme-select">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="ocean">Ocean</option>
+                <option value="forest">Forest</option>
+                <option value="ethiopian">Ethiopian</option>
+            </select>
+        </div>
+    </div>
+    <script src="popup.js"></script>
+</body>
 </html>

@@ -8,17 +8,52 @@
 </head>
 <body>
     <div class="options-container">
-        <h2>Options</h2>
+        <h2>Pom-or-doro Settings</h2>
         <label>
-            Work Duration (minutes):
-            <input type="number" id="work-duration" min="1" max="120" />
+            Work Duration (minutes)
+            <input type="number" id="workInput" min="1" max="120" />
         </label>
         <label>
-            Break Duration (minutes):
-            <input type="number" id="break-duration" min="1" max="60" />
+            Short Break (minutes)
+            <input type="number" id="shortBreakInput" min="1" max="60" />
         </label>
-        <button id="save-btn">Save</button>
-        <div id="status-msg"></div>
+        <label>
+            Long Break (minutes)
+            <input type="number" id="longBreakInput" min="1" max="60" />
+        </label>
+        <label>
+            Pomodoros Before Long Break
+            <input type="number" id="pomosBeforeLongInput" min="1" max="10" />
+        </label>
+        <label>
+            Theme
+            <select id="themeSelect">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="ocean">Ocean</option>
+                <option value="forest">Forest</option>
+                <option value="ethiopian">Ethiopian</option>
+            </select>
+        </label>
+        <label>
+            Notification Sound
+            <select id="soundSelect">
+                <option value="standard">Standard</option>
+                <option value="amharic">Amharic</option>
+            </select>
+        </label>
+        <label>
+            Language
+            <select id="languageSelect">
+                <option value="en">English</option>
+                <option value="am">Amharic (አማርኛ)</option>
+            </select>
+        </label>
+        <div class="options-actions">
+            <button id="saveBtn">Save</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+        <div class="status-message" id="statusMsg"></div>
     </div>
     <script src="options.js"></script>
 </body>

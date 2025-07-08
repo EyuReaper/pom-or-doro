@@ -1,34 +1,157 @@
-@import 'variables';
 :root {
   --bg: #fff;
   --text: #222;
   --accent: #e57373;
   --timer-bg: #f8f9fa;
 }
+
 .theme-dark {
   --bg: #23272f;
   --text: #f8f9fa;
   --accent: #64b5f6;
   --timer-bg: #2c313a;
 }
+
 .theme-ocean {
   --bg: #e0f7fa;
   --text: #006064;
   --accent: #00bcd4;
   --timer-bg: #b2ebf2;
 }
+
 .theme-forest {
   --bg: #e8f5e9;
   --text: #1b5e20;
   --accent: #43a047;
   --timer-bg: #c8e6c9;
 }
+
+.theme-ethiopian {
+  --bg: #fff8e1;
+  --text: #4e342e;
+  --accent: #ffc107;
+  --timer-bg: #ffe082;
+}
+
+body {
+  background: linear-gradient(120deg, var(--bg, #fff) 0%, var(--timer-bg) 100%);
+  color: var(--text, #222);
+  font-family: "Work Sans", Arial, sans-serif;
+  margin: 0;
+  min-width: 340px;
+  max-width: 420px;
+  padding: 0;
+  transition: background 0.5s;
+}
+
 .pomodoro-container {
-  background: var(--bg);
-  border-radius: 10px;
-  padding: 1.5rem;
+  background: var(--bg, #fff);
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  margin: 32px auto 0 auto;
+  padding: 2.2rem 1.5rem 1.5rem 1.5rem;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
+
+h1 {
+  font-family: "Lily Script One", cursive;
+  font-size: 2.5rem;
+  color: var(--accent, #e57373);
+  text-align: center;
+  margin-bottom: 1.2rem;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
 .timer-display {
-  background: var(--timer-bg);
-  color: var(--accent);
+  background: var(--timer-bg, #f8f9fa);
+  color: var(--accent, #e57373);
+  font-size: 3rem;
+  text-align: center;
+  border-radius: 12px;
+  margin: 1.5rem 0 1rem 0;
+  padding: 1.2rem 0;
+  letter-spacing: 2px;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: background 0.5s, color 0.5s;
 }
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.controls button {
+  background: var(--accent, #e57373);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 0.7rem 1.2rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s;
+  font-size: 1.08rem;
+  padding: 0.7rem 1.3rem;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+.controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.session-info {
+  text-align: center;
+  color: var(--text, #222);
+  font-size: 1.1rem;
+  margin-bottom: 1.2rem;
+  font-weight: 500;
+}
+
+.theme-switcher {
+  margin-top: 1.2rem;
+  text-align: center;
+}
+
+.theme-switcher label {
+  font-size: 1rem;
+  color: var(--text, #222);
+  margin-right: 0.5rem;
+}
+
+.theme-switcher select {
+  padding: 0.4rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  background: #fff;
+  color: #222;
+  transition: border 0.2s;
+}
+
+.theme-switcher select:focus {
+  border-color: var(--accent, #e57373);
+  outline: none;
+}
+
+@media (max-width: 500px) {
+  .pomodoro-container {
+    margin-top: 10px !important;
+    padding: 1.2rem 0.5rem;
+    min-width: 98vw;
+    max-width: 98vw;
+  }
+  .controls {
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+}
+
+/*# sourceMappingURL=popup.css.map */
