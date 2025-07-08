@@ -184,6 +184,10 @@ function updateAmounts() {
     workTime: workAmount,
     shortBreakTime: breakAmount
   });
+  // Pause/stop timer if running
+  wasStarted = false;
+  isPaused = true;
+  chrome.runtime.sendMessage({ action: 'reset' });
   resetTimerDisplay();
 }
 
