@@ -12,6 +12,27 @@
 <body>
     <div class="pomodoro-container">
         <h1>Pom-or-doro</h1>
+        
+        <div class="pomodoro-labels">
+            <span class="work-label"><b>Pom</b></span>
+            <span class="break-label"><b>Doro</b></span>
+        </div>
+
+        <div class="amount-controls">
+            <div class="amount-group">
+                <span class="amount-title">Work</span>
+                <button class="amount-btn" id="subWork">-</button>
+                <span id="workAmount" class="amount-value">1</span>
+                <button class="amount-btn" id="addWork">+</button>
+            </div>
+            <div class="amount-group">
+                <span class="amount-title">Break</span>
+                <button class="amount-btn" id="subBreak">-</button>
+                <span id="breakAmount" class="amount-value">1</span>
+                <button class="amount-btn" id="addBreak">+</button>
+            </div>
+        </div>
+        
         <div class="timer-display" id="timer-display">25:00</div>
         <div class="controls">
             <button id="start-btn">Start</button>
@@ -19,6 +40,7 @@
             <button id="reset-btn">Reset</button>
         </div>
         <div class="session-info" id="session-info">Session: 1</div>
+        
         <div class="switchers-row">
             <div class="theme-switcher">
                 <label for="theme-select">Themes</label>
@@ -36,6 +58,31 @@
                     <option value="en">English</option>
                     <option value="am">አማርኛ</option>
                 </select>
+            </div>
+        </div>
+        
+        <div class="about-section">
+            <button id="about-btn" class="about-btn">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" style="vertical-align:middle;margin-right:6px;">
+                <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2" fill="none"/>
+                <rect x="9" y="8" width="2" height="6" rx="1" fill="currentColor"/>
+                <circle cx="10" cy="6" r="1" fill="currentColor"/>
+              </svg>
+              About
+            </button>
+            <div id="about-modal" class="about-modal">
+                <div class="about-modal-content">
+                    <span class="close-modal" id="close-about">&times;</span>
+                    <h2>What do "Pom" and "Doro" mean?</h2>
+                    <p>
+                        <b>Pom</b> stands for "apple" (Ethiopian for "ፖም"), representing a healthy focused work session.<br>
+                        <b>Doro</b> is inspired by the Amharic word for "chicken" (ዶሮ), symbolizing a break—just as a chicken takes a break from laying eggs!
+                    </p>
+                    <h3>Short History of the Pomodoro Technique</h3>
+                    <p>
+                        The Pomodoro Technique was developed by Francesco Cirillo in the late 1980s. He used a tomato-shaped kitchen timer to break work into intervals, traditionally 25 minutes in length, separated by short breaks. This method helps improve focus and productivity by encouraging regular rest and reducing mental fatigue.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
