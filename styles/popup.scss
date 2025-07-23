@@ -27,16 +27,16 @@ body.theme-forest {
   --timer-bg: #c8e6c9;
 }
 body.theme-ethiopian {
-  --bg: #fff8e1;
-  --text: #4e342e;
-  --accent: #ffc107;
-  --timer-bg: #ffe082;
+  --bg: #009A49; /* Ethiopian green */
+  --text: #FFFFFF; /* White for better contrast */
+  --accent: #FFC107; /* Ethiopian yellow */
+  --timer-bg: #D81B60; /* Ethiopian red */
 }
 
 body {
   background: linear-gradient(120deg, var(--bg, #fff) 0%, var(--timer-bg) 100%);
   color: var(--text, #222);
-  font-family: 'Work Sans', Arial, sans-serif;
+  font-family: 'Work Sans', 'Abyssinica SIL', Arial, sans-serif;
   margin: 0;
   min-width: 340px;
   max-width: 420px;
@@ -77,98 +77,49 @@ h1 {
 }
 
 .work-label b {
-  color: var(--accent, #e57373); // Pom color (red)
+  color: var(--accent, #e57373); /* Pom color */
 }
 .break-label b {
-  color: #43a047; // Doro color (green)
+  color: #43a047; /* Doro color (green) */
 }
 
-.amount-controls {
-  display: flex;
-  justify-content: center;
-  gap: 2.5rem;
-  margin-bottom: 1.2rem;
-}
-
-.amount-group {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: var(--timer-bg, #f8f9fa);
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-}
-
-.amount-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-right: 0.5rem;
-  color: var(--text, #222);
-}
-
-.amount-group .amount-title {
-  font-weight: 600;
-}
-
-.amount-group .amount-title:contains("Work") {
-  color: var(--accent, #e57373); // Pom color
-}
-.amount-group .amount-title:contains("Break") {
-  color: #43a047; // Doro color
-}
-
-#workAmount {
-  color: var(--accent, #e57373); // Pom color
-}
-#breakAmount {
-  color: #43a047; // Doro color
-}
-
-.amount-btn {
-  background: var(--accent, #e57373);
-  color: #fff;
-  border: none;
-  border-radius: 50%;
-  width: 2rem;
-  height: 2rem;
-  font-size: 1.2rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.amount-btn:hover {
-  background: #b71c1c;
-}
-.amount-value {
-  min-width: 2rem;
+.timer-section {
   text-align: center;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--accent, #e57373);
 }
 
 .timer-display {
   background: var(--timer-bg, #f8f9fa);
   color: var(--accent, #e57373);
   font-size: 2.5rem;
-  text-align: center;
   border-radius: 12px;
-  margin: 1.5rem 0 1rem 0;
+  margin: 1.5rem 0 0.5rem 0;
   padding: 1.2rem 0;
   letter-spacing: 2px;
   font-variant-numeric: tabular-nums;
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
   transition: background 0.5s, color 0.5s;
+  font-family: 'Abyssinica SIL', monospace; /* Ensure Amharic numerals render correctly */
 }
 
 .timer-display.work-mode {
-  color: #e57373;
+  color: var(--accent, #e57373);
 }
 .timer-display.break-mode {
+  color: #43a047;
+}
+
+.session-type {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--accent, #e57373);
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.session-type[data-amharic="ፖም"] {
+  color: var(--accent, #e57373);
+}
+.session-type[data-amharic="ዶሮ"] {
   color: #43a047;
 }
 
@@ -197,6 +148,11 @@ h1 {
   transform: translateY(-1px);
 }
 
+.controls button:focus {
+  outline: 2px solid var(--accent, #e57373);
+  outline-offset: 2px;
+}
+
 .controls button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -210,56 +166,39 @@ h1 {
   font-weight: 500;
 }
 
-.theme-switcher {
-  margin-top: 1.2rem;
+.settings-note {
   text-align: center;
+  font-size: 0.9em;
+  color: var(--text, #666);
+  margin: 1rem 0;
 }
 
-.theme-switcher label {
-  font-size: 1rem;
-  color: var(--text, #222);
-  margin-right: 0.5rem;
+.settings-note a {
+  color: var(--accent, #009A49); /* Ethiopian green */
+  text-decoration: underline;
+  transition: color 0.2s;
 }
 
-.theme-switcher select {
-  padding: 0.4rem 0.8rem;
-  border-radius: variables.$radius;
-  border: 1px solid #ccc;
-  font-size: 1rem;
-  background: #fff;
-  color: #222;
-  transition: border 0.2s;
+.settings-note a:hover {
+  color: #D81B60; /* Ethiopian red */
 }
 
-.theme-switcher select:focus {
-  border-color: var(--accent, #e57373);
-  outline: none;
+.settings-note a:focus {
+  outline: 2px solid var(--accent, #009A49);
+  outline-offset: 2px;
 }
 
-.language-switcher {
-  margin-top: 1.2rem;
-  text-align: center;
+.theme-ethiopian .settings-note {
+  color: #FFC107; /* Ethiopian yellow */
 }
 
-.language-switcher label {
-  font-size: 1rem;
-  color: var(--text, #222);
-  margin-right: 0.5rem;
+.theme-ethiopian .settings-note a {
+  color: #FFFFFF;
 }
 
-.language-switcher select {
-  padding: 0.4rem 0.8rem;
-  border-radius: variables.$radius;
-  border: 1px solid #ccc;
-  font-size: 1rem;
-  background: #fff;
-  color: #222;
-  transition: border 0.2s;
-}
-
-.language-switcher select:focus {
-  border-color: var(--accent, #e57373);
-  outline: none;
+.theme-ethiopian .settings-note a:hover,
+.theme-ethiopian .settings-note a:focus {
+  color: #D81B60;
 }
 
 .switchers-row {
@@ -287,7 +226,7 @@ h1 {
 .theme-switcher select,
 .language-switcher select {
   padding: 0.4rem 0.8rem;
-  border-radius: 10px;
+  border-radius: variables.$radius, 8px; /* Fallback if variables.$radius is undefined */
   border: 1px solid #ccc;
   font-size: 1rem;
   background: #fff;
@@ -298,13 +237,15 @@ h1 {
 .theme-switcher select:focus,
 .language-switcher select:focus {
   border-color: var(--accent, #e57373);
-  outline: none;
+  outline: 2px solid var(--accent, #e57373);
+  outline-offset: 2px;
 }
 
 .about-section {
   text-align: center;
   margin-top: 1.5rem;
 }
+
 .about-btn {
   background: var(--accent, #e57373);
   color: #fff;
@@ -313,27 +254,40 @@ h1 {
   font-size: 1rem;
   padding: 0.5rem 1.2rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.2s;
 }
+
 .about-btn:hover {
   background: #b71c1c;
+  transform: translateY(-1px);
 }
+
+.about-btn:focus {
+  outline: 2px solid var(--accent, #e57373);
+  outline-offset: 2px;
+}
+
 .about-btn svg {
   vertical-align: middle;
   margin-right: 6px;
 }
+
 .about-modal {
   display: none;
   position: fixed;
   z-index: 1000;
-  left: 0; top: 0; width: 100vw; height: 100vh;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0,0,0,0.3);
   justify-content: center;
   align-items: center;
 }
+
 .about-modal-content {
-  background: #fff;
-  color: #222;
+  background: var(--bg, #fff);
+  color: var(--text, #222);
   border-radius: 12px;
   padding: 2rem 1.5rem;
   max-width: 400px;
@@ -341,18 +295,21 @@ h1 {
   box-shadow: 0 4px 24px rgba(0,0,0,0.15);
   position: relative;
 }
+
 .close-modal {
   position: absolute;
-  top: 1rem; right: 1rem;
+  top: 1rem;
+  right: 1rem;
   font-size: 1.5rem;
   cursor: pointer;
   color: #888;
+  transition: color 0.2s;
 }
 
-// When starting work
-$('#timer-display').removeClass('break-mode').addClass('work-mode');
-// When starting break
-$('#timer-display').removeClass('work-mode').addClass('break-mode');
+.close-modal:hover,
+.close-modal:focus {
+  color: var(--accent, #e57373);
+}
 
 @media (max-width: 500px) {
   .pomodoro-container {
@@ -369,6 +326,10 @@ $('#timer-display').removeClass('work-mode').addClass('break-mode');
     flex-direction: row;
     gap: 0.5rem;
     align-items: stretch;
+  }
+  .settings-note {
+    font-size: 0.85em;
+    padding: 0 0.5rem;
   }
   .about-modal-content {
     width: 90vw;
