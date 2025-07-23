@@ -77,10 +77,10 @@ h1 {
 }
 
 .work-label b {
-  color: var(--accent, #e57373);
+  color: var(--accent, #e57373); // Pom color (red)
 }
 .break-label b {
-  color: #43a047;
+  color: #43a047; // Doro color (green)
 }
 
 .amount-controls {
@@ -105,6 +105,24 @@ h1 {
   font-weight: 600;
   margin-right: 0.5rem;
   color: var(--text, #222);
+}
+
+.amount-group .amount-title {
+  font-weight: 600;
+}
+
+.amount-group .amount-title:contains("Work") {
+  color: var(--accent, #e57373); // Pom color
+}
+.amount-group .amount-title:contains("Break") {
+  color: #43a047; // Doro color
+}
+
+#workAmount {
+  color: var(--accent, #e57373); // Pom color
+}
+#breakAmount {
+  color: #43a047; // Doro color
 }
 
 .amount-btn {
@@ -145,6 +163,13 @@ h1 {
   font-variant-numeric: tabular-nums;
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
   transition: background 0.5s, color 0.5s;
+}
+
+.timer-display.work-mode {
+  color: #e57373;
+}
+.timer-display.break-mode {
+  color: #43a047;
 }
 
 .controls {
@@ -323,6 +348,11 @@ h1 {
   cursor: pointer;
   color: #888;
 }
+
+// When starting work
+$('#timer-display').removeClass('break-mode').addClass('work-mode');
+// When starting break
+$('#timer-display').removeClass('work-mode').addClass('break-mode');
 
 @media (max-width: 500px) {
   .pomodoro-container {

@@ -78,6 +78,13 @@
   min-height: 1.5em;
 }
 
+.timer-display.work-mode {
+  color: var(--accent, #e57373);
+}
+.timer-display.break-mode {
+  color: #43a047;
+}
+
 @media (max-width: 500px) {
   .options-container {
     max-width: 98vw;

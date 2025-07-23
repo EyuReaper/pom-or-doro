@@ -16,14 +16,14 @@ const subWorkBtn = document.getElementById('subWork');
 const addBreakBtn = document.getElementById('addBreak');
 const subBreakBtn = document.getElementById('subBreak');
 
-// Set initial values to 1
-let workAmount = 1;
-let breakAmount = 1;
+// Set initial values to Pomodoro defaults
+let workAmount = 25;
+let breakAmount = 5;
 let wasStarted = false;
 let isPaused = true;
 
 // Update timer and session display
-function updateDisplay({ timeLeft, pomodoroCount, isPaused: paused }) {
+function updateDisplay({ timeLeft, pomodoroCount, isPaused: paused, mode }) {
     isPaused = paused;
     const minutes = String(Math.floor(timeLeft / 60)).padStart(2, '0');
     const seconds = String(timeLeft % 60).padStart(2, '0');
@@ -38,11 +38,21 @@ function updateDisplay({ timeLeft, pomodoroCount, isPaused: paused }) {
     } else {
         startBtn.textContent = languageSelect.value === 'am' ? 'ጀምር' : 'Start';
     }
+
+    // Update timer color by mode
+    if (mode === 'break') {
+        timerDisplay.classList.remove('work-mode');
+        timerDisplay.classList.add('break-mode');
+    } else {
+        timerDisplay.classList.remove('break-mode');
+        timerDisplay.classList.add('work-mode');
+    }
 }
 
 // Request current timer state on popup open
 chrome.runtime.sendMessage({ action: 'getTimerState' }, (state) => {
     if (state) updateDisplay(state);
+    else resetTimerDisplay();
 });
 
 // Listen for timer updates from background
@@ -65,6 +75,7 @@ resetBtn.addEventListener('click', () => {
     wasStarted = false;
     chrome.runtime.sendMessage({ action: 'reset' });
     startBtn.textContent = languageSelect.value === 'am' ? 'ጀምር' : 'Start';
+    resetTimerDisplay();
 });
 
 // Theme logic
@@ -98,11 +109,11 @@ function applyLanguage(lang) {
     resetBtn.textContent = lang === 'am' ? 'ዳግም አስጀምር' : 'Reset';
     sessionInfo.textContent = lang === 'am' ? 'ክፍለ-ጊዜ: 1' : 'Session: 1';
     document.querySelector('.theme-switcher label').textContent = lang === 'am' ? 'ገጽታ' : 'Themes';
-  document.querySelector('.language-switcher label').textContent = lang === 'am' ? 'ቋንቋ' : 'Language';
-  document.getElementById('about-btn').textContent = lang === 'am' ? 'ስለ ፖሞር-ዶሮ' : 'About Pom-or-doro';
-  document.getElementById('about-title').textContent = lang === 'am'
-    ? '“ፖም” እና “ዶሮ” ምን ማለት ናቸው?'
-    : 'What do "Pom" and "Doro" mean?';
+    document.querySelector('.language-switcher label').textContent = lang === 'am' ? 'ቋንቋ' : 'Language';
+    document.getElementById('about-btn').textContent = lang === 'am' ? 'ስለ ፖሞር-ዶሮ' : 'About Pom-or-doro';
+    document.getElementById('about-title').textContent = lang === 'am'
+        ? '“ፖም” እና “ዶሮ” ምን ማለት ናቸው?'
+        : 'What do "Pom" and "Doro" mean?';
 }
 
 // Load language on popup open
@@ -120,38 +131,38 @@ languageSelect.addEventListener('change', () => {
 
 // Load settings and apply on popup open
 chrome.storage.sync.get(
-  {
-    theme: 'light',
-    language: 'en',
-    workTime: 1,
-    shortBreakTime: 1,
-    longBreakTime: 15,
-    pomodoroCountForLongBreak: 4,
-    selectedSound: 'standard'
-  },
-  (settings) => {
-    if (chrome.runtime.lastError) {
-      alert('Failed to load settings.');
-      return;
+    {
+        theme: 'light',
+        language: 'en',
+        workTime: 25,
+        shortBreakTime: 5,
+        longBreakTime: 15,
+        pomodoroCountForLongBreak: 4,
+        selectedSound: 'standard'
+    },
+    (settings) => {
+        if (chrome.runtime.lastError) {
+            alert('Failed to load settings.');
+            return;
+        }
+        // Apply theme
+        applyTheme(settings.theme);
+        // Apply language
+        applyLanguage(settings.language);
+        // Set work/break amounts if stored
+        workAmount = settings.workTime;
+        breakAmount = settings.shortBreakTime;
+        workAmountSpan.textContent = workAmount;
+        breakAmountSpan.textContent = breakAmount;
+        resetTimerDisplay();
     }
-    // Apply theme
-    applyTheme(settings.theme);
-    // Apply language
-    applyLanguage(settings.language);
-    // Set work/break amounts if stored
-    workAmount = settings.workTime;
-    breakAmount = settings.shortBreakTime;
-    workAmountSpan.textContent = workAmount;
-    breakAmountSpan.textContent = breakAmount;
-    resetTimerDisplay();
-  }
 );
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'sync') {
-    if (changes.theme) applyTheme(changes.theme.newValue);
-    if (changes.language) applyLanguage(changes.language.newValue);
-  }
+    if (area === 'sync') {
+        if (changes.theme) applyTheme(changes.theme.newValue);
+        if (changes.language) applyLanguage(changes.language.newValue);
+    }
 });
 
 // About modal logic
@@ -160,77 +171,93 @@ const aboutModal = document.getElementById('about-modal');
 const closeAbout = document.getElementById('close-about');
 
 aboutBtn.addEventListener('click', () => {
-  aboutModal.style.display = 'flex';
+    aboutModal.style.display = 'flex';
 });
 closeAbout.addEventListener('click', () => {
-  aboutModal.style.display = 'none';
+    aboutModal.style.display = 'none';
 });
 closeAbout.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' || e.key === ' ') {
-    aboutModal.style.display = 'none';
-  }
+    if (e.key === 'Enter' || e.key === ' ') {
+        aboutModal.style.display = 'none';
+    }
 });
 window.addEventListener('click', (e) => {
-  if (e.target === aboutModal) aboutModal.style.display = 'none';
+    if (e.target === aboutModal) aboutModal.style.display = 'none';
 });
 window.addEventListener('keydown', (e) => {
-  if (aboutModal.style.display === 'flex' && e.key === 'Escape') {
-    aboutModal.style.display = 'none';
-  }
+    if (aboutModal.style.display === 'flex' && e.key === 'Escape') {
+        aboutModal.style.display = 'none';
+    }
 });
 
 // Reset timer display to initial work amount
 function resetTimerDisplay() {
-  // For work session
-  timerDisplay.textContent = `${String(workAmount).padStart(2, '0')}:00`;
-  startBtn.disabled = false;
-  pauseBtn.disabled = true;
-  sessionInfo.textContent = languageSelect.value === 'am' ? 'ክፍለ-ጊዜ: 1' : 'Session: 1';
-  // Reset Start button text
-  if (isPaused && wasStarted) {
-    startBtn.textContent = languageSelect.value === 'am' ? 'ቀጥል' : 'Resume';
-  } else {
-    startBtn.textContent = languageSelect.value === 'am' ? 'ጀምር' : 'Start';
-  }
+    timerDisplay.textContent = `${String(workAmount).padStart(2, '0')}:00`;
+    timerDisplay.classList.remove('break-mode');
+    timerDisplay.classList.add('work-mode');
+    startBtn.disabled = false;
+    pauseBtn.disabled = true;
+    sessionInfo.textContent = languageSelect.value === 'am' ? 'ክፍለ-ጊዜ: 1' : 'Session: 1';
+    if (isPaused && wasStarted) {
+        startBtn.textContent = languageSelect.value === 'am' ? 'ቀጥል' : 'Resume';
+    } else {
+        startBtn.textContent = languageSelect.value === 'am' ? 'ጀምር' : 'Start';
+    }
 }
 
 // Update storage and UI
 function updateAmounts() {
-  workAmountSpan.textContent = workAmount;
-  breakAmountSpan.textContent = breakAmount;
-  chrome.storage.sync.set({
-    workTime: workAmount,
-    shortBreakTime: breakAmount
-  });
-  // Pause/stop timer if running
-  wasStarted = false;
-  isPaused = true;
-  chrome.runtime.sendMessage({ action: 'reset' });
-  resetTimerDisplay();
+    workAmountSpan.textContent = workAmount;
+    breakAmountSpan.textContent = breakAmount;
+    chrome.storage.sync.set({
+        workTime: workAmount,
+        shortBreakTime: breakAmount
+    });
+    // Pause/stop timer if running
+    wasStarted = false;
+    isPaused = true;
+    chrome.runtime.sendMessage({ action: 'reset' });
+    resetTimerDisplay();
 }
 
 // Button events for amount controls
 addWorkBtn.addEventListener('click', () => {
-  if (workAmount < 120) {
-    workAmount++;
-    updateAmounts();
-  }
+    if (workAmount < 120) {
+        workAmount++;
+        updateAmounts();
+    }
 });
 subWorkBtn.addEventListener('click', () => {
-  if (workAmount > 1) {
-    workAmount--;
-    updateAmounts();
-  }
+    if (workAmount > 1) {
+        workAmount--;
+        updateAmounts();
+    }
 });
 addBreakBtn.addEventListener('click', () => {
-  if (breakAmount < 60) {
-    breakAmount++;
-    updateAmounts();
-  }
+    if (breakAmount < 60) {
+        breakAmount++;
+        updateAmounts();
+    }
 });
 subBreakBtn.addEventListener('click', () => {
-  if (breakAmount > 1) {
-    breakAmount--;
-    updateAmounts();
-  }
+    if (breakAmount > 1) {
+        breakAmount--;
+        updateAmounts();
+    }
 });
+
+function startWorkSession() {
+    let timeLeft = workAmount * 60; }
+
+function startBreakSession() {
+    let timeLeft = breakAmount * 60; 
+}
+
+function startTimer(mode) {
+    let timeLeft;
+    if (mode === 'work') {
+        timeLeft = workAmount * 60;
+    } else if (mode === 'break') {
+        timeLeft = breakAmount * 60;
+    }
+}
