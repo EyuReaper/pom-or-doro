@@ -3,59 +3,62 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pom-or-doro Options</title>
+    <title data-amharic="ፖም ወይ ዶሮ ቅንብሮች" data-english="Pom & Doro Settings">Pom & Doro Settings</title>
     <link rel="stylesheet" href="css/main.css" />
-    <link href="https://fonts.googleapis.com/css?family=Lily+Script+One&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Work+Sans:400,100&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lily+Script+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@100;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Abyssinica+SIL&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="options-container">
-        <h2>Pom-or-doro Settings</h2>
-        <label>
-            Work Duration (minutes)
-            <input type="number" id="workInput" min="1" max="120" />
-        </label>
-        <label>
-            Short Break (minutes)
-            <input type="number" id="shortBreakInput" min="1" max="60" />
-        </label>
-        <label>
-            Long Break (minutes)
-            <input type="number" id="longBreakInput" min="1" max="60" />
-        </label>
-        <label>
-            Pomodoros Before Long Break
-            <input type="number" id="pomosBeforeLongInput" min="1" max="10" />
-        </label>
-        <label>
-            Theme
-            <select id="themeSelect">
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-                <option value="ocean">Ocean</option>
-                <option value="forest">Forest</option>
-                <option value="ethiopian">Ethiopian</option>
-            </select>
-        </label>
-        <label>
-            Notification Sound
-            <select id="soundSelect">
-                <option value="standard">Standard</option>
-                <option value="amharic">Amharic</option>
-            </select>
-        </label>
-        <label>
-            Language
-            <select id="languageSelect">
-                <option value="en">English</option>
-                <option value="am">አማርኛ</option>
-            </select>
-        </label>
-        <div class="options-actions">
-            <button id="saveBtn">Save</button>
-            <button id="resetBtn">Reset</button>
-        </div>
-        <div class="status-message" id="statusMsg"></div>
+        <h2 data-amharic="ፖም  ዶሮ ቅንብሮች" data-english="Pom & Doro Settings">Pom & Doro Settings</h2>
+        <form id="options-form">
+            <div class="settings-group">
+                <label for="workInput" data-amharic="የሥራ ጊዜ (ደቂቃዎች)" data-english="Work Duration (minutes)">Work Duration (minutes)</label>
+                <input type="number" id="workInput" min="1" max="120" aria-label="Work duration in minutes" />
+            </div>
+            <div class="settings-group">
+                <label for="shortBreakInput" data-amharic="አጭር እረፍት (ደቂቃዎች)" data-english="Short Break (minutes)">Short Break (minutes)</label>
+                <input type="number" id="shortBreakInput" min="1" max="60" aria-label="Short break duration in minutes" />
+            </div>
+            <div class="settings-group">
+                <label for="longBreakInput" data-amharic="ረጅም እረፍት (ደቂቃዎች)" data-english="Long Break (minutes)">Long Break (minutes)</label>
+                <input type="number" id="longBreakInput" min="1" max="60" aria-label="Long break duration in minutes" />
+            </div>
+            <div class="settings-group">
+                <label for="pomosBeforeLongInput" data-amharic="ረጅም እረፍት በፊት ፖሞዶሮዎች" data-english="Pomodoros Before Long Break">Pomodoros Before Long Break</label>
+                <input type="number" id="pomosBeforeLongInput" min="1" max="10" aria-label="Number of Pomodoros before long break" />
+            </div>
+            <div class="settings-group">
+                <label for="themeSelect" data-amharic="ገጽታ" data-english="Theme">Theme</label>
+                <select id="themeSelect" aria-label="Select theme">
+                    <option value="light" data-amharic="ብርሃን" data-english="Light">Light</option>
+                    <option value="dark" data-amharic="ጨለማ" data-english="Dark">Dark</option>
+                    <option value="ocean" data-amharic="ውቅያኖስ" data-english="Ocean">Ocean</option>
+                    <option value="forest" data-amharic="ጫካ" data-english="Forest">Forest</option>
+                    <option value="ethiopian" data-amharic="ኢትዮጵያዊ" data-english="Ethiopian">Ethiopian</option>
+                </select>
+            </div>
+            <div class="settings-group">
+                <label for="soundSelect" data-amharic="የማሳወቂያ ድምፅ" data-english="Notification Sound">Notification Sound</label>
+                <select id="soundSelect" aria-label="Select notification sound">
+                    <option value="standard" data-amharic="መደበኛ" data-english="Standard">Standard</option>
+                    <option value="amharic" data-amharic="አማርኛ" data-english="Amharic">Amharic</option>
+                </select>
+            </div>
+            <div class="settings-group">
+                <label for="languageSelect" data-amharic="ቋንቋ" data-english="Language">Language</label>
+                <select id="languageSelect" aria-label="Select language">
+                    <option value="en" data-amharic="እንግሊዝኛ" data-english="English">English</option>
+                    <option value="am" data-amharic="አማርኛ" data-english="Amharic">Amharic</option>
+                </select>
+            </div>
+            <div class="options-actions">
+                <button type="submit" id="saveBtn" data-amharic="አስቀምጥ" data-english="Save">Save</button>
+                <button type="button" id="resetBtn" data-amharic="ዳግም አስጀምር" data-english="Reset">Reset</button>
+            </div>
+        </form>
+        <div class="status-message" id="statusMsg" role="status" data-amharic="ቅንብሮች ተቀምጠዋል!" data-english="Settings saved!"></div>
     </div>
     <script src="options.js"></script>
 </body>
