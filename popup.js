@@ -119,13 +119,19 @@ function resetTimerDisplay() {
 }
 
 /**
- * Applies the selected theme to the document body.
+ * Applies the selected theme to the document body and modal.
  * @param {string} theme - The theme name.
  */
 function applyTheme(theme) {
     if (!selectors.themeSelect) return;
     document.body.className = `theme-${theme}`;
     selectors.themeSelect.value = theme;
+    // Ensure modal styles update if open
+    if (selectors.aboutModal && selectors.aboutModal.getAttribute('aria-hidden') === 'false') {
+        console.log(`Reapplying theme-${theme} to modal`);
+        selectors.aboutModal.classList.remove('theme-light', 'theme-dark', 'theme-ocean', 'theme-forest', 'theme-ethiopian');
+        selectors.aboutModal.classList.add(`theme-${theme}`);
+    }
 }
 
 /**
@@ -279,8 +285,13 @@ function toggleModal(show) {
     if (show) {
         trapFocus(aboutModal);
         closeAbout.focus();
+        // Apply current theme to modal
+        const currentTheme = selectors.themeSelect?.value || 'light';
+        aboutModal.classList.add(`theme-${currentTheme}`);
+        console.log(`Applied theme-${currentTheme} to modal on open`);
     } else {
         aboutBtn.focus();
+        aboutModal.classList.remove('theme-light', 'theme-dark', 'theme-ocean', 'theme-forest', 'theme-ethiopian');
     }
 }
 

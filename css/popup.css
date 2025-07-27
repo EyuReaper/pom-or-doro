@@ -326,8 +326,14 @@ select:hover {
     box-shadow: var(--shadow);
     position: relative;
     color: var(--text);
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, background 0.5s, color 0.5s;
     font-family: "Work Sans", "Abyssinica SIL", sans-serif;
+}
+
+.theme-dark .about-modal-content {
+    background: rgba(42, 42, 42, 0.95);
+    color: #e0e0e0;
+    border: 1px solid rgba(255, 111, 97, 0.3);
 }
 
 .theme-ethiopian .about-modal-content {
@@ -341,6 +347,12 @@ select:hover {
     font-family: "Lily Script One", cursive;
     color: var(--accent);
     margin-bottom: 1rem;
+}
+
+.theme-dark .about-modal-content h2,
+.theme-dark .about-modal-content h3 {
+    background: #333333;
+    color: #ff6f61;
 }
 
 .theme-ethiopian .about-modal-content h2,
@@ -364,6 +376,10 @@ select:hover {
     transition: color 0.3s ease, transform 0.2s ease;
 }
 
+.theme-dark .close-modal {
+    color: rgba(224, 224, 224, 0.7);
+}
+
 .theme-ethiopian .close-modal {
     color: rgba(255, 255, 255, 0.7);
 }
@@ -372,6 +388,11 @@ select:hover {
 .close-modal:focus {
     color: var(--accent);
     transform: scale(1.2);
+}
+
+.theme-dark .close-modal:hover,
+.theme-dark .close-modal:focus {
+    color: #ff6f61;
 }
 
 .theme-ethiopian .close-modal:hover,
