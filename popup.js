@@ -1,263 +1,363 @@
-// Pomodoro Timer Logic
+const DEFAULT_SETTINGS = {
+    theme: 'light',
+    language: 'en',
+    workTime: 25,
+    shortBreakTime: 5,
+    longBreakTime: 15,
+    pomodoroCountForLongBreak: 4,
+    selectedSound: 'standard'
+};
 
-const timerDisplay = document.getElementById('timer-display');
-const startBtn = document.getElementById('start-btn');
-const pauseBtn = document.getElementById('pause-btn');
-const resetBtn = document.getElementById('reset-btn');
-const sessionInfo = document.getElementById('session-info');
-const themeSelect = document.getElementById('theme-select');
-const languageSelect = document.getElementById('language-select');
+// DOM Selectors
+const selectors = {
+    timerDisplay: document.getElementById('timer-display'),
+    sessionType: document.getElementById('session-type'),
+    startBtn: document.getElementById('start-btn'),
+    pauseBtn: document.getElementById('pause-btn'),
+    resetBtn: document.getElementById('reset-btn'),
+    sessionInfo: document.getElementById('session-info'),
+    themeSelect: document.getElementById('theme-select'),
+    languageSelect: document.getElementById('language-select'),
+    aboutBtn: document.getElementById('about-btn'),
+    aboutModal: document.getElementById('about-modal'),
+    closeAbout: document.getElementById('close-about'),
+    settingsLink: document.getElementById('settings-link')
+};
 
-// Work/Break amount controls
-const workAmountSpan = document.getElementById('workAmount');
-const breakAmountSpan = document.getElementById('breakAmount');
-const addWorkBtn = document.getElementById('addWork');
-const subWorkBtn = document.getElementById('subWork');
-const addBreakBtn = document.getElementById('addBreak');
-const subBreakBtn = document.getElementById('subBreak');
+// Validate DOM elements
+const missingElements = Object.entries(selectors)
+    .filter(([key, value]) => !value)
+    .map(([key]) => key);
+if (missingElements.length > 0) {
+    console.error(`Missing DOM elements: ${missingElements.join(', ')}`);
+}
 
-// Set initial values to Pomodoro defaults
-let workAmount = 25;
-let breakAmount = 5;
+// Amharic numerals mapping
+const amharicNumerals = ['፲', '፩', '፪', '፫', '፬', '፭', '፮', '፯', '፰', '፱'];
+
+// State variables
 let wasStarted = false;
 let isPaused = true;
+let workTime = DEFAULT_SETTINGS.workTime;
 
-// Update timer and session display
-function updateDisplay({ timeLeft, pomodoroCount, isPaused: paused, mode }) {
-    isPaused = paused;
-    const minutes = String(Math.floor(timeLeft / 60)).padStart(2, '0');
-    const seconds = String(timeLeft % 60).padStart(2, '0');
-    timerDisplay.textContent = `${minutes}:${seconds}`;
-    sessionInfo.textContent = `Session: ${pomodoroCount + 1}`;
+// Persistent aria-live region
+const liveRegion = document.createElement('div');
+liveRegion.setAttribute('aria-live', 'assertive');
+liveRegion.setAttribute('style', 'position: absolute; left: -9999px;');
+document.body.appendChild(liveRegion);
+
+/**
+ * Converts a number to Amharic numerals.
+ * @param {number} number - The number to convert.
+ * @returns {string} The number in Amharic numerals.
+ */
+function toAmharicNumerals(number) {
+    return number.toString().split('').map(digit => amharicNumerals[parseInt(digit)]).join('');
+}
+
+/**
+ * Announces timer updates to screen readers.
+ * @param {string} timeStr - The formatted time string.
+ * @param {string} mode - The current mode ('work' or 'break').
+ * @param {string} lang - The language code ('en', 'am').
+ */
+function ariaLiveUpdate(timeStr, mode, lang) {
+    const modeText = lang === 'am' ? (mode === 'work' ? 'ፖም' : 'ዶሮ') : mode.charAt(0).toUpperCase() + mode.slice(1);
+    liveRegion.textContent = `${modeText}: ${timeStr}`;
+}
+
+/**
+ * Updates the display elements based on the current timer state.
+ * @param {object} state - The timer state object.
+ */
+function updateDisplay({ timeLeft, pomodoroCount, isPaused: pausedState, mode }) {
+    const { timerDisplay, sessionInfo, sessionType, startBtn, pauseBtn } = selectors;
+    if (!timerDisplay || !sessionInfo || !sessionType || !startBtn || !pauseBtn) return;
+
+    isPaused = pausedState;
+    const lang = selectors.languageSelect?.value || 'en';
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    const minStr = lang === 'am' ? toAmharicNumerals(minutes) : String(minutes).padStart(2, '0');
+    const secStr = lang === 'am' ? toAmharicNumerals(seconds) : String(seconds).padStart(2, '0');
+    const timeStr = `${minStr}:${secStr}`;
+
+    timerDisplay.textContent = timeStr;
+    sessionInfo.textContent = lang === 'am' ? `ክፍለ-ጊዜ: ${toAmharicNumerals(pomodoroCount + 1)}` : `Session: ${pomodoroCount + 1}`;
+    sessionType.textContent = lang === 'am' ? (mode === 'work' ? 'ፖም' : 'ዶሮ') : mode.charAt(0).toUpperCase() + mode.slice(1);
+
+    ariaLiveUpdate(timeStr, mode, lang);
+
     startBtn.disabled = !isPaused;
     pauseBtn.disabled = isPaused;
+    startBtn.textContent = isPaused && wasStarted ? (lang === 'am' ? 'ቀጥል' : 'Resume') : (lang === 'am' ? 'ጀምር' : 'Start');
+    startBtn.setAttribute('aria-label', startBtn.textContent);
+    pauseBtn.setAttribute('aria-label', lang === 'am' ? 'አቁም' : 'Pause');
 
-    // Update Start/Resume button text
-    if (isPaused && wasStarted) {
-        startBtn.textContent = languageSelect.value === 'am' ? 'ቀጥል' : 'Resume';
-    } else {
-        startBtn.textContent = languageSelect.value === 'am' ? 'ጀምር' : 'Start';
-    }
-
-    // Update timer color by mode
-    if (mode === 'break') {
-        timerDisplay.classList.remove('work-mode');
-        timerDisplay.classList.add('break-mode');
-    } else {
-        timerDisplay.classList.remove('break-mode');
-        timerDisplay.classList.add('work-mode');
-    }
+    timerDisplay.classList.toggle('work-mode', mode === 'work');
+    timerDisplay.classList.toggle('break-mode', mode === 'break');
 }
 
-// Request current timer state on popup open
-chrome.runtime.sendMessage({ action: 'getTimerState' }, (state) => {
-    if (state) updateDisplay(state);
-    else resetTimerDisplay();
-});
-
-// Listen for timer updates from background
-chrome.runtime.onMessage.addListener((msg) => {
-    if (msg.action === 'timerUpdate') {
-        updateDisplay(msg);
-    }
-});
-
-// Button actions
-startBtn.addEventListener('click', () => {
-    wasStarted = true;
-    chrome.runtime.sendMessage({ action: 'start' });
-});
-pauseBtn.addEventListener('click', () => {
-    wasStarted = true;
-    chrome.runtime.sendMessage({ action: 'pause' });
-});
-resetBtn.addEventListener('click', () => {
-    wasStarted = false;
-    chrome.runtime.sendMessage({ action: 'reset' });
-    startBtn.textContent = languageSelect.value === 'am' ? 'ጀምር' : 'Start';
-    resetTimerDisplay();
-});
-
-// Theme logic
-function applyTheme(theme) {
-    document.body.className = `theme-${theme}`;
-    themeSelect.value = theme;
-}
-
-// Load theme on popup open
-chrome.storage.sync.get({ theme: 'light' }, ({ theme }) => {
-    applyTheme(theme);
-});
-
-// Change theme on select
-themeSelect.addEventListener('change', () => {
-    const selectedTheme = themeSelect.value;
-    applyTheme(selectedTheme);
-    chrome.storage.sync.set({ theme: selectedTheme });
-});
-
-// Apply language to popup UI
-function applyLanguage(lang) {
-    document.querySelector('h1').textContent = lang === 'am' ? 'ፖሞር-ዶሮ' : 'Pom-or-doro';
-    // Set Start/Resume button text based on state
-    if (isPaused && wasStarted) {
-        startBtn.textContent = lang === 'am' ? 'ቀጥል' : 'Resume';
-    } else {
-        startBtn.textContent = lang === 'am' ? 'ጀምር' : 'Start';
-    }
-    pauseBtn.textContent = lang === 'am' ? 'አቁም' : 'Pause';
-    resetBtn.textContent = lang === 'am' ? 'ዳግም አስጀምር' : 'Reset';
-    sessionInfo.textContent = lang === 'am' ? 'ክፍለ-ጊዜ: 1' : 'Session: 1';
-    document.querySelector('.theme-switcher label').textContent = lang === 'am' ? 'ገጽታ' : 'Themes';
-    document.querySelector('.language-switcher label').textContent = lang === 'am' ? 'ቋንቋ' : 'Language';
-    document.getElementById('about-btn').textContent = lang === 'am' ? 'ስለ ፖሞር-ዶሮ' : 'About Pom-or-doro';
-    document.getElementById('about-title').textContent = lang === 'am'
-        ? '“ፖም” እና “ዶሮ” ምን ማለት ናቸው?'
-        : 'What do "Pom" and "Doro" mean?';
-}
-
-// Load language on popup open
-chrome.storage.sync.get({ language: 'en' }, ({ language }) => {
-    applyLanguage(language);
-    languageSelect.value = language;
-});
-
-// Change language on select
-languageSelect.addEventListener('change', () => {
-    const selectedLang = languageSelect.value;
-    chrome.storage.sync.set({ language: selectedLang });
-    applyLanguage(selectedLang);
-});
-
-// Load settings and apply on popup open
-chrome.storage.sync.get(
-    {
-        theme: 'light',
-        language: 'en',
-        workTime: 25,
-        shortBreakTime: 5,
-        longBreakTime: 15,
-        pomodoroCountForLongBreak: 4,
-        selectedSound: 'standard'
-    },
-    (settings) => {
-        if (chrome.runtime.lastError) {
-            alert('Failed to load settings.');
-            return;
-        }
-        // Apply theme
-        applyTheme(settings.theme);
-        // Apply language
-        applyLanguage(settings.language);
-        // Set work/break amounts if stored
-        workAmount = settings.workTime;
-        breakAmount = settings.shortBreakTime;
-        workAmountSpan.textContent = workAmount;
-        breakAmountSpan.textContent = breakAmount;
-        resetTimerDisplay();
-    }
-);
-
-chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'sync') {
-        if (changes.theme) applyTheme(changes.theme.newValue);
-        if (changes.language) applyLanguage(changes.language.newValue);
-    }
-});
-
-// About modal logic
-const aboutBtn = document.getElementById('about-btn');
-const aboutModal = document.getElementById('about-modal');
-const closeAbout = document.getElementById('close-about');
-
-aboutBtn.addEventListener('click', () => {
-    aboutModal.style.display = 'flex';
-});
-closeAbout.addEventListener('click', () => {
-    aboutModal.style.display = 'none';
-});
-closeAbout.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-        aboutModal.style.display = 'none';
-    }
-});
-window.addEventListener('click', (e) => {
-    if (e.target === aboutModal) aboutModal.style.display = 'none';
-});
-window.addEventListener('keydown', (e) => {
-    if (aboutModal.style.display === 'flex' && e.key === 'Escape') {
-        aboutModal.style.display = 'none';
-    }
-});
-
-// Reset timer display to initial work amount
+/**
+ * Resets the timer display to the initial work amount.
+ */
 function resetTimerDisplay() {
-    timerDisplay.textContent = `${String(workAmount).padStart(2, '0')}:00`;
+    const { timerDisplay, sessionInfo, sessionType, startBtn, pauseBtn } = selectors;
+    if (!timerDisplay || !sessionInfo || !sessionType || !startBtn || !pauseBtn) return;
+
+    const lang = selectors.languageSelect?.value || 'en';
+    const minStr = lang === 'am' ? toAmharicNumerals(workTime) : String(workTime).padStart(2, '0');
+    timerDisplay.textContent = `${minStr}:00`;
     timerDisplay.classList.remove('break-mode');
     timerDisplay.classList.add('work-mode');
     startBtn.disabled = false;
     pauseBtn.disabled = true;
-    sessionInfo.textContent = languageSelect.value === 'am' ? 'ክፍለ-ጊዜ: 1' : 'Session: 1';
-    if (isPaused && wasStarted) {
-        startBtn.textContent = languageSelect.value === 'am' ? 'ቀጥል' : 'Resume';
-    } else {
-        startBtn.textContent = languageSelect.value === 'am' ? 'ጀምር' : 'Start';
-    }
+    sessionInfo.textContent = lang === 'am' ? 'ክፍለ-ጊዜ: ፩' : 'Session: 1';
+    sessionType.textContent = lang === 'am' ? 'ፖም' : 'Work';
+    startBtn.textContent = lang === 'am' ? 'ጀምር' : 'Start';
+    startBtn.setAttribute('aria-label', startBtn.textContent);
 }
 
-// Update storage and UI
-function updateAmounts() {
-    workAmountSpan.textContent = workAmount;
-    breakAmountSpan.textContent = breakAmount;
-    chrome.storage.sync.set({
-        workTime: workAmount,
-        shortBreakTime: breakAmount
+/**
+ * Applies the selected theme to the document body.
+ * @param {string} theme - The theme name.
+ */
+function applyTheme(theme) {
+    if (!selectors.themeSelect) return;
+    document.body.className = `theme-${theme}`;
+    selectors.themeSelect.value = theme;
+}
+
+/**
+ * Applies the selected language to UI elements.
+ * @param {string} lang - The language code ('en', 'am').
+ */
+function applyLanguage(lang) {
+    document.documentElement.setAttribute('data-lang', lang);
+    document.querySelectorAll('[data-amharic]').forEach(el => {
+        const englishText = el.dataset.english || el.textContent.trim();
+        const amharicText = el.dataset.amharic;
+        el.textContent = lang === 'am' ? amharicText : englishText;
+        el.setAttribute('lang', lang);
     });
-    // Pause/stop timer if running
-    wasStarted = false;
-    isPaused = true;
-    chrome.runtime.sendMessage({ action: 'reset' });
-    resetTimerDisplay();
+
+    document.querySelectorAll('option[data-amharic]').forEach(opt => {
+        opt.textContent = lang === 'am' ? opt.dataset.amharic : opt.dataset.english || opt.textContent;
+        opt.setAttribute('lang', lang);
+    });
+
+    const title = document.querySelector('title');
+    if (title) {
+        title.textContent = lang === 'am' ? title.dataset.amharic : title.dataset.english || title.textContent;
+    }
+
+    if (isPaused) resetTimerDisplay();
+    else chrome.runtime.sendMessage({ action: 'getTimerState' }, updateDisplay);
 }
 
-// Button events for amount controls
-addWorkBtn.addEventListener('click', () => {
-    if (workAmount < 120) {
-        workAmount++;
-        updateAmounts();
+// Initialize settings
+chrome.storage.sync.get(DEFAULT_SETTINGS, (settings) => {
+    if (chrome.runtime.lastError) {
+        console.error('Failed to load settings:', chrome.runtime.lastError.message);
+        return;
     }
+    applyTheme(settings.theme);
+    applyLanguage(settings.language);
+    workTime = settings.workTime;
+    if (isPaused) resetTimerDisplay();
 });
-subWorkBtn.addEventListener('click', () => {
-    if (workAmount > 1) {
-        workAmount--;
-        updateAmounts();
+
+// Request initial timer state
+chrome.runtime.sendMessage({ action: 'getTimerState' }, (response) => {
+    if (chrome.runtime.lastError) {
+        console.error('Failed to get timer state:', chrome.runtime.lastError.message);
+        resetTimerDisplay();
+        return;
     }
-});
-addBreakBtn.addEventListener('click', () => {
-    if (breakAmount < 60) {
-        breakAmount++;
-        updateAmounts();
-    }
-});
-subBreakBtn.addEventListener('click', () => {
-    if (breakAmount > 1) {
-        breakAmount--;
-        updateAmounts();
+    if (response && typeof response === 'object' && response !== null) {
+        updateDisplay(response);
+    } else {
+        resetTimerDisplay();
     }
 });
 
-function startWorkSession() {
-    let timeLeft = workAmount * 60; }
-
-function startBreakSession() {
-    let timeLeft = breakAmount * 60; 
+// Event Listeners
+// Timer controls
+if (selectors.startBtn) {
+    selectors.startBtn.addEventListener('click', () => {
+        console.log('Start button clicked');
+        wasStarted = true;
+        chrome.runtime.sendMessage({ action: 'start' }, (response) => {
+            if (chrome.runtime.lastError) {
+                console.error('Failed to start timer:', chrome.runtime.lastError.message);
+            }
+        });
+    });
 }
 
-function startTimer(mode) {
-    let timeLeft;
-    if (mode === 'work') {
-        timeLeft = workAmount * 60;
-    } else if (mode === 'break') {
-        timeLeft = breakAmount * 60;
+if (selectors.pauseBtn) {
+    selectors.pauseBtn.addEventListener('click', () => {
+        console.log('Pause button clicked');
+        wasStarted = true;
+        chrome.runtime.sendMessage({ action: 'pause' }, (response) => {
+            if (chrome.runtime.lastError) {
+                console.error('Failed to pause timer:', chrome.runtime.lastError.message);
+            }
+        });
+    });
+}
+
+if (selectors.resetBtn) {
+    selectors.resetBtn.addEventListener('click', () => {
+        console.log('Reset button clicked');
+        wasStarted = false;
+        chrome.runtime.sendMessage({ action: 'reset' }, (response) => {
+            if (chrome.runtime.lastError) {
+                console.error('Failed to reset timer:', chrome.runtime.lastError.message);
+            }
+            resetTimerDisplay();
+        });
+    });
+}
+
+// Theme and language changes
+if (selectors.themeSelect) {
+    selectors.themeSelect.addEventListener('change', () => {
+        console.log('Theme changed:', selectors.themeSelect.value);
+        const selectedTheme = selectors.themeSelect.value;
+        applyTheme(selectedTheme);
+        chrome.storage.sync.set({ theme: selectedTheme }, () => {
+            if (chrome.runtime.lastError) {
+                console.error('Failed to save theme:', chrome.runtime.lastError.message);
+            }
+        });
+    });
+}
+
+if (selectors.languageSelect) {
+    selectors.languageSelect.addEventListener('change', () => {
+        console.log('Language changed:', selectors.languageSelect.value);
+        const selectedLanguage = selectors.languageSelect.value;
+        applyLanguage(selectedLanguage);
+        chrome.storage.sync.set({ language: selectedLanguage }, () => {
+            if (chrome.runtime.lastError) {
+                console.error('Failed to save language:', chrome.runtime.lastError.message);
+            }
+        });
+    });
+}
+
+// Settings link
+if (selectors.settingsLink) {
+    selectors.settingsLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('Settings link clicked');
+        chrome.runtime.openOptionsPage();
+    });
+}
+
+// Storage change listener
+chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'sync') return;
+    if (changes.theme) applyTheme(changes.theme.newValue);
+    if (changes.language) applyLanguage(changes.language.newValue);
+    if (changes.workTime) {
+        workTime = changes.workTime.newValue;
+        if (isPaused) resetTimerDisplay();
+    }
+});
+
+// Modal controls
+function toggleModal(show) {
+    const { aboutModal, aboutBtn, closeAbout } = selectors;
+    if (!aboutModal || !aboutBtn || !closeAbout) {
+        console.error('Modal elements missing:', { aboutModal, aboutBtn, closeAbout });
+        return;
+    }
+    console.log(`Toggling modal: ${show ? 'show' : 'hide'}`);
+    aboutModal.setAttribute('aria-hidden', show ? 'false' : 'true');
+    if (show) {
+        trapFocus(aboutModal);
+        closeAbout.focus();
+    } else {
+        aboutBtn.focus();
     }
 }
+
+if (selectors.aboutBtn) {
+    selectors.aboutBtn.addEventListener('click', () => {
+        console.log('About button clicked');
+        toggleModal(true);
+    });
+}
+
+if (selectors.closeAbout) {
+    selectors.closeAbout.addEventListener('click', () => {
+        console.log('Close modal button clicked');
+        toggleModal(false);
+    });
+
+    selectors.closeAbout.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === 'Space') {
+            console.log('Close modal via keyboard');
+            e.preventDefault();
+            toggleModal(false);
+        }
+    });
+}
+
+if (selectors.aboutModal) {
+    selectors.aboutModal.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            console.log('Escape key pressed in modal');
+            e.preventDefault();
+            toggleModal(false);
+        }
+    });
+
+    selectors.aboutModal.addEventListener('click', (e) => {
+        if (e.target === selectors.aboutModal) {
+            console.log('Clicked outside modal content');
+            toggleModal(false);
+        }
+    });
+}
+
+// Focus trapping for modal
+function trapFocus(modal) {
+    if (!modal) return;
+    const focusableElements = modal.querySelectorAll('button, [tabindex="0"]');
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    if (!firstElement || !lastElement) {
+        console.warn('No focusable elements in modal');
+        return;
+    }
+
+    console.log('Trapping focus in modal');
+    modal.addEventListener('keydown', function handler(e) {
+        if (e.key === 'Tab') {
+            if (e.shiftKey && document.activeElement === firstElement) {
+                e.preventDefault();
+                lastElement.focus();
+            } else if (!e.shiftKey && document.activeElement === lastElement) {
+                e.preventDefault();
+                firstElement.focus();
+            }
+        }
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            toggleModal(false);
+            modal.removeEventListener('keydown', handler);
+        }
+    });
+}
+
+// Timer update listener
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    if (msg.action === 'timerUpdate') {
+        console.log('Received timer update:', msg);
+        updateDisplay(msg);
+    }
+});

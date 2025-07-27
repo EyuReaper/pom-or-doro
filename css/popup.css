@@ -1,341 +1,410 @@
+/* Reset and Base Styles */
 :root {
-  --bg: #fff;
-  --text: #222;
-  --accent: #e57373;
-  --timer-bg: #f8f9fa;
+    --text: #1a1a1a;
+    --bg: #f5f7fa;
+    --accent: #ff6f61;
+    --timer-bg: #ffffff;
+    --button-bg: #ffffff;
+    --button-hover: #f0f2f5;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-body.theme-dark {
-  --bg: #23272f;
-  --text: #f8f9fa;
-  --accent: #64b5f6;
-  --timer-bg: #2c313a;
-}
-
-body.theme-ocean {
-  --bg: #e0f7fa;
-  --text: #006064;
-  --accent: #00bcd4;
-  --timer-bg: #b2ebf2;
-}
-
-body.theme-forest {
-  --bg: #e8f5e9;
-  --text: #1b5e20;
-  --accent: #43a047;
-  --timer-bg: #c8e6c9;
-}
-
-body.theme-ethiopian {
-  --bg: #009A49;
-  --text: #FFFFFF;
-  --accent: #FFC107;
-  --timer-bg: #D81B60;
+[data-lang="am"] {
+    font-family: "Abyssinica SIL", sans-serif;
 }
 
 body {
-  background: linear-gradient(120deg, var(--bg, #fff) 0%, var(--timer-bg) 100%);
-  color: var(--text, #222);
-  font-family: "Work Sans", "Abyssinica SIL", Arial, sans-serif;
-  margin: 0;
-  min-width: 340px;
-  max-width: 420px;
-  padding: 0;
-  transition: background 0.5s;
+    margin: 0;
+    padding: 1rem;
+    font-family: "Work Sans", "Abyssinica SIL", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    width: 320px;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: background 0.5s, color 0.5s;
 }
 
+/* Theme Variations */
+.theme-light {
+    --bg: #f5f7fa;
+    --text: #1a1a1a;
+    --timer-bg: #ffffff;
+    --button-bg: #ffffff;
+    --button-hover: #f0f2f5;
+    --accent: #ff6f61;
+}
+
+.theme-dark {
+    --bg: #1e1e1e;
+    --text: #e0e0e0;
+    --timer-bg: #2a2a2a;
+    --button-bg: #333333;
+    --button-hover: #444444;
+    --accent: #ff6f61;
+}
+
+.theme-ocean {
+    --bg: #e0f7fa;
+    --text: #006064;
+    --timer-bg: #b2ebf2;
+    --button-bg: #80deea;
+    --button-hover: #4dd0e1;
+    --accent: #0097a7;
+}
+
+.theme-forest {
+    --bg: #e8f5e9;
+    --text: #2e7d32;
+    --timer-bg: #c8e6c9;
+    --button-bg: #81c784;
+    --button-hover: #4caf50;
+    --accent: #388e3c;
+}
+
+.theme-ethiopian {
+    --bg: #006241;
+    --text: #FFFFFF;
+    --timer-bg: rgba(255, 255, 255, 0.1);
+    --button-bg: #FFC107;
+    --button-hover: #FFB300;
+    --accent: #FFC107;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Container */
 .pomodoro-container {
-  background: var(--bg, #fff);
-  border-radius: 18px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
-  margin: 32px auto 0 auto;
-  padding: 2.2rem 1.5rem 1.5rem 1.5rem;
-  max-width: 400px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
+    text-align: center;
+    padding: 0.5rem;
+    max-width: 300px;
 }
 
+/* Header */
 h1 {
-  font-family: "Lily Script One", cursive;
-  font-size: 2.5rem;
-  color: var(--accent, #e57373);
-  text-align: center;
-  margin-bottom: 1.2rem;
-  letter-spacing: 1px;
-  font-weight: 700;
+    font-family: "Lily Script One", cursive;
+    font-size: 1.8rem;
+    color: var(--accent);
+    margin: 0.5rem 0;
 }
 
+/* Session Labels */
 .pomodoro-labels {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  margin-bottom: 0.5rem;
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: var(--text, #222);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    color: var(--text);
 }
 
-.work-label b {
-  color: var(--accent, #e57373);
+.work-label {
+    color: var(--accent);
 }
 
-.break-label b {
-  color: #43a047;
+.break-label {
+    color: #2e7d32;
 }
 
+.theme-ethiopian .break-label {
+    color: #FFFFFF;
+}
+
+/* Timer Section */
 .timer-section {
-  text-align: center;
+    margin-bottom: 1rem;
 }
 
 .timer-display {
-  background: var(--timer-bg, #f8f9fa);
-  color: var(--accent, #e57373);
-  font-size: 2.5rem;
-  border-radius: 12px;
-  margin: 1.5rem 0 0.5rem 0;
-  padding: 1.2rem 0;
-  letter-spacing: 2px;
-  font-variant-numeric: tabular-nums;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-  transition: background 0.5s, color 0.5s;
-  font-family: "Abyssinica SIL", monospace;
+    background: var(--timer-bg);
+    color: var(--accent);
+    font-size: 2.5rem;
+    border-radius: 12px;
+    padding: 1.2rem;
+    text-align: center;
+    letter-spacing: 2px;
+    font-variant-numeric: tabular-nums;
+    box-shadow: var(--shadow);
+    transition: background 0.5s, color 0.5s;
+    font-family: "Work Sans", "Abyssinica SIL", monospace;
 }
 
 .timer-display.work-mode {
-  color: var(--accent, #e57373);
+    color: var(--accent);
 }
 
 .timer-display.break-mode {
-  color: #43a047;
+    color: #2e7d32;
+}
+
+.theme-ethiopian .timer-display {
+    backdrop-filter: blur(5px);
+    color: #FFFFFF;
 }
 
 .session-type {
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: var(--accent, #e57373);
-  display: block;
-  margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--text);
+    display: block;
+    margin-top: 0.5rem;
 }
 
-.session-type[data-amharic="ፖም"] {
-  color: var(--accent, #e57373);
-}
-
-.session-type[data-amharic="ዶሮ"] {
-  color: #43a047;
-}
-
+/* Controls */
 .controls {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 1.2rem;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1rem;
 }
 
-.controls button {
-  background: var(--accent, #e57373);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.08rem;
-  font-weight: 600;
-  padding: 0.7rem 1.3rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
+button {
+    background: var(--button-bg);
+    color: var(--text);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    font-family: "Work Sans", "Abyssinica SIL", sans-serif;
 }
 
-.controls button:hover {
-  background: #d32f2f;
-  transform: translateY(-1px);
+button:hover:not(:disabled) {
+    background: var(--button-hover);
+    transform: translateY(-2px);
 }
 
-.controls button:focus {
-  outline: 2px solid var(--accent, #e57373);
-  outline-offset: 2px;
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
-.controls button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.theme-ethiopian button {
+    color: #1a1a1a;
 }
 
+.theme-ethiopian button:hover:not(:disabled) {
+    color: #1a1a1a;
+}
+
+/* Session Info */
 .session-info {
-  text-align: center;
-  color: var(--text, #222);
-  font-size: 1.1rem;
-  margin-bottom: 1.2rem;
-  font-weight: 500;
+    font-size: 1rem;
+    color: var(--text);
+    margin-bottom: 1rem;
 }
 
-.settings-note {
-  text-align: center;
-  font-size: 0.9em;
-  color: var(--text, #666);
-  margin: 1rem 0;
+.theme-ethiopian .session-info {
+    color: #FFFFFF;
 }
 
-.settings-note a {
-  color: var(--accent, #009A49);
-  text-decoration: underline;
-  transition: color 0.2s;
-}
-
-.settings-note a:hover {
-  color: #D81B60;
-}
-
-.settings-note a:focus {
-  outline: 2px solid var(--accent, #009A49);
-  outline-offset: 2px;
-}
-
-.theme-ethiopian .settings-note {
-  color: #FFC107;
-}
-
-.theme-ethiopian .settings-note a {
-  color: #FFFFFF;
-}
-
-.theme-ethiopian .settings-note a:hover,
-.theme-ethiopian .settings-note a:focus {
-  color: #D81B60;
-}
-
+/* Switchers Row */
 .switchers-row {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  gap: 1.2rem;
-  margin-top: 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 .theme-switcher,
 .language-switcher {
-  margin: 0;
-  text-align: left;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
-.theme-switcher label,
-.language-switcher label {
-  display: block;
-  font-size: 1rem;
-  color: var(--text, #222);
-  margin-bottom: 0.2rem;
+label {
+    font-size: 0.9rem;
+    color: var(--text);
+    margin-bottom: 0.3rem;
 }
 
-.theme-switcher select,
-.language-switcher select {
-  padding: 0.4rem 0.8rem;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
-  background: #fff;
-  color: #222;
-  transition: border 0.2s, outline 0.2s;
+select {
+    background: var(--button-bg);
+    color: var(--text);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-family: "Work Sans", "Abyssinica SIL", sans-serif;
 }
 
-.theme-switcher select:focus,
-.language-switcher select:focus {
-  border-color: var(--accent, #e57373);
-  outline: 2px solid var(--accent, #e57373);
-  outline-offset: 2px;
+select:hover {
+    background: var(--button-hover);
 }
 
+.theme-ethiopian select {
+    color: #1a1a1a;
+}
+
+/* Settings Note */
+.settings-note {
+    font-size: 0.85rem;
+    color: var(--text);
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.settings-note a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.settings-note a:hover {
+    text-decoration: underline;
+}
+
+.theme-ethiopian .settings-note {
+    color: #FFFFFF;
+}
+
+.theme-ethiopian .settings-note a {
+    color: #FFC107;
+}
+
+/* About Section */
 .about-section {
-  text-align: center;
-  margin-top: 1.5rem;
+    margin-top: 1rem;
 }
 
 .about-btn {
-  background: var(--accent, #e57373);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  padding: 0.5rem 1.2rem;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: color 0.3s;
 }
 
 .about-btn:hover {
-  background: #b71c1c;
-  transform: translateY(-1px);
+    color: var(--text);
 }
 
-.about-btn:focus {
-  outline: 2px solid var(--accent, #e57373);
-  outline-offset: 2px;
+.theme-ethiopian .about-btn {
+    color: #FFC107;
 }
 
-.about-btn svg {
-  vertical-align: middle;
-  margin-right: 6px;
+.theme-ethiopian .about-btn:hover {
+    color: #FFFFFF;
 }
 
+/* Modal Styles */
 .about-modal {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.3);
-  justify-content: center;
-  align-items: center;
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.3s ease;
+}
+
+.about-modal[aria-hidden="false"] {
+    display: flex;
 }
 
 .about-modal-content {
-  background: var(--bg, #fff);
-  color: var(--text, #222);
-  border-radius: 12px;
-  padding: 2rem 1.5rem;
-  max-width: 400px;
-  margin: 2rem auto;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
-  position: relative;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 2rem 1.5rem;
+    max-width: 280px;
+    margin: 1rem;
+    box-shadow: var(--shadow);
+    position: relative;
+    color: var(--text);
+    transition: transform 0.3s ease;
+    font-family: "Work Sans", "Abyssinica SIL", sans-serif;
+}
+
+.theme-ethiopian .about-modal-content {
+    background: rgba(0, 154, 73, 0.85);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    color: #FFFFFF;
+}
+
+.about-modal-content h2,
+.about-modal-content h3 {
+    font-family: "Lily Script One", cursive;
+    color: var(--accent);
+    margin-bottom: 1rem;
+}
+
+.theme-ethiopian .about-modal-content h2,
+.theme-ethiopian .about-modal-content h3 {
+    color: #FFC107;
+}
+
+.about-modal-content p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
 }
 
 .close-modal {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #888;
-  transition: color 0.2s;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: rgba(var(--text), 0.6);
+    transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.theme-ethiopian .close-modal {
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .close-modal:hover,
 .close-modal:focus {
-  color: var(--accent, #e57373);
+    color: var(--accent);
+    transform: scale(1.2);
 }
 
-@media (max-width: 500px) {
-  .pomodoro-container {
-    margin-top: 10px !important;
-    padding: 1.2rem 0.5rem;
-    min-width: 98vw;
-    max-width: 98vw;
-  }
-  .controls {
-    flex-direction: column;
-    gap: 0.7rem;
-  }
-  .switchers-row {
-    flex-direction: row;
-    gap: 0.5rem;
-    align-items: stretch;
-  }
-  .settings-note {
-    font-size: 0.85em;
-    padding: 0 0.5rem;
-  }
-  .about-modal-content {
-    width: 90vw;
-    padding: 1rem 0.5rem;
-  }
+.theme-ethiopian .close-modal:hover,
+.theme-ethiopian .close-modal:focus {
+    color: #FFC107;
+}
+
+/* Responsive Design */
+@media (max-width: 320px) {
+    body {
+        padding: 0.5rem;
+    }
+
+    .pomodoro-container {
+        max-width: 100%;
+    }
+
+    .timer-display {
+        font-size: 2rem;
+        padding: 1rem;
+    }
+
+    .controls {
+        flex-wrap: wrap;
+    }
+
+    .switchers-row {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .about-modal-content {
+        max-width: 90%;
+        padding: 1.5rem 1rem;
+    }
 }

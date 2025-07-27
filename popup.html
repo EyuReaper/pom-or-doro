@@ -1,87 +1,89 @@
 <!DOCTYPE html>
-<html lang="en">
+<html data-lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pom-or-doro</title>
-    <link rel="stylesheet" href="css/popup.css" />
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-amharic="ፖም-ወይ-ዶሮ" data-english="Pom-or-doro">Pom-or-doro</title>
+    <link rel="stylesheet" href="css/popup.css">
     <link href="https://fonts.googleapis.com/css2?family=Abyssinica+SIL&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@100;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lily+Script+One&display=swap" rel="stylesheet">
 </head>
 <body>
     <main class="pomodoro-container" role="main">
         <!-- Header -->
-        <h1 id="app-title" data-amharic="ፖም-ወይም-ዶሮ">Pom-or-doro</h1>
+        <h1 id="app-title" data-amharic="ፖም-ወይ-ዶሮ" data-english="Pom-or-doro" lang="en">Pom-or-doro</h1>
         
         <!-- Session Labels -->
         <div class="pomodoro-labels">
-            <span class="work-label" data-amharic="ፖም"><b>Pom</b></span>
-            <span class="break-label" data-amharic="ዶሮ"><b>Doro</b></span>
+            <span class="work-label" data-amharic="ፖም" data-english="Pom" lang="en"><b>Pom</b></span>
+            <span class="break-label" data-amharic="ዶሮ" data-english="Doro" lang="en"><b>Doro</b></span>
         </div>
 
         <!-- Timer Display -->
         <section class="timer-section" aria-live="polite">
-            <div class="timer-display" id="timer-display">25:00</div>
-            <span class="session-type" id="session-type" data-amharic="ፖም">Work</span>
+            <div class="timer-display" id="timer-display" lang="en">25:00</div>
+            <span class="session-type" id="session-type" data-amharic="ፖም" data-english="Work" lang="en">Work</span>
         </section>
 
         <!-- Controls -->
         <div class="controls">
-            <button id="start-btn" aria-label="Start timer" data-amharic="ጀምር">Start</button>
-            <button id="pause-btn" aria-label="Pause timer" data-amharic="አቁም" disabled>Pause</button>
-            <button id="reset-btn" aria-label="Reset timer" data-amharic="ዳግም አስጀምር">Reset</button>
+            <button id="start-btn" aria-label="Start timer" data-amharic="ጀምር" data-english="Start" lang="en">Start</button>
+            <button id="pause-btn" aria-label="Pause timer" data-amharic="አቁም" data-english="Pause" lang="en" disabled>Pause</button>
+            <button id="reset-btn" aria-label="Reset timer" data-amharic="ዳግም አስጀምር" data-english="Reset" lang="en">Reset</button>
         </div>
-        <div class="session-info" id="session-info" data-amharic="ክፍለ ጊዜ: 1">Session: 1</div>
+        <div class="session-info" id="session-info" data-amharic="ክፍለ-ጊዜ: ፩" data-english="Session: 1" lang="en">Session: 1</div>
         
         <!-- Settings (Themes and Language) -->
         <section class="switchers-row">
             <div class="theme-switcher">
-                <label for="theme-select" data-amharic="ገፅታዎች">Themes</label>
+                <label for="theme-select" data-amharic="ገፅታዎች" data-english="Themes" lang="en">Themes</label>
                 <select id="theme-select" aria-label="Select theme">
-                    <option value="light" data-amharic="ብርሃን">Light</option>
-                    <option value="dark" data-amharic="ጨለማ">Dark</option>
-                    <option value="ocean" data-amharic="ውቅያኖስ">Ocean</option>
-                    <option value="forest" data-amharic="ደን">Forest</option>
-                    <option value="ethiopian" data-amharic="ኢትዮጵያዊ">Ethiopian</option>
+                    <option value="light" data-amharic="ብርሃን" data-english="Light" lang="en">Light</option>
+                    <option value="dark" data-amharic="ጨለማ" data-english="Dark" lang="en">Dark</option>
+                    <option value="ocean" data-amharic="ውቅያኖስ" data-english="Ocean" lang="en">Ocean</option>
+                    <option value="forest" data-amharic="ደን" data-english="Forest" lang="en">Forest</option>
+                    <option value="ethiopian" data-amharic="ኢትዮጵያዊ" data-english="Ethiopian" lang="en">Ethiopian</option>
                 </select>
             </div>
             <div class="language-switcher">
-                <label for="language-select" data-amharic="ቋንቋ">Language</label>
+                <label for="language-select" data-amharic="ቋንቋ" data-english="Language" lang="en">Language</label>
                 <select id="language-select" aria-label="Select language">
-                    <option value="en" data-amharic="እንግሊዝኛ">English</option>
-                    <option value="am" data-amharic="አማርኛ">አማርኛ</option>
+                    <option value="en" data-amharic="እንግሊዝኛ" data-english="English" lang="en">English</option>
+                    <option value="am" data-amharic="አማርኛ" data-english="Amharic" lang="am">Amharic</option>
                 </select>
             </div>
         </section>
         
         <!-- Note about Duration Settings -->
-        <p class="settings-note" data-amharic="የሥራ እና የእረፍት ጊዜዎችን ለማስተካከል የሚያስፈልጉትን ቅንብሮች ይጎብኙ።">
-            Visit the <a href="options.html" target="_blank" aria-label="Open settings page">Settings</a> page to adjust work and break durations.
+        <p class="settings-note" role="note" data-amharic="የሥራ እና የእረፍት ጊዜዎችን ለማስተካከል ቅንብሮችን ይጎብኙ።" data-english="Visit the Settings page to adjust work and break durations." lang="en">
+            Visit the <a id="settings-link" href="#" aria-label="Open Settings page to adjust work and break durations" data-amharic="ቅንብሮች" data-english="Settings" lang="en">Settings</a> page to adjust work and break durations.
         </p>
 
         <!-- About Section -->
         <section class="about-section">
-            <button id="about-btn" class="about-btn" aria-label="Open about Pom-or-doro modal">
+            <button id="about-btn" class="about-btn" aria-label="Open about Pom-or-doro modal" lang="en">
                 <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="vertical-align:middle;margin-right:6px;">
                     <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2" fill="none"/>
                     <rect x="9" y="8" width="2" height="6" rx="1" fill="currentColor"/>
                     <circle cx="10" cy="6" r="1" fill="currentColor"/>
                 </svg>
-                <span data-amharic="ስለ ፖም-ወይም-ዶሮ">About Pom-or-doro</span>
+                <span data-amharic="ስለ ፖም-ወይ-ዶሮ" data-english="About Pom-or-doro" lang="en">About Pom-or-doro</span>
             </button>
-            <div id="about-modal" class="about-modal" role="dialog" aria-modal="true" aria-labelledby="about-title" tabindex="-1">
+            <div id="about-modal" class="about-modal" role="dialog" aria-modal="true" aria-labelledby="about-title" aria-hidden="true" tabindex="-1">
                 <div class="about-modal-content">
-                    <span class="close-modal" id="close-about" tabindex="0" aria-label="Close about modal">×</span>
-                    <h2 id="about-title" data-amharic="ፖም እና ዶሮ ማለት ምን ማለት ነው?">What do "Pom" and "Doro" mean?</h2>
-                    <p>
-                        <b>Pom</b> stands for "apple" (Ethiopian for "ፖም"), representing a healthy focused work session.<br>
-                        <b>Doro</b> is inspired by the Amharic word for "chicken" (ዶሮ), symbolizing a break—just as a chicken takes a break from laying eggs!
+                    <span class="close-modal" id="close-about" tabindex="0" aria-label="Close about modal" role="button" lang="en">×</span>
+                    <h2 id="about-title" data-amharic="ፖም እና ዶሮ ማለት ምን ማለት ነው?" data-english="What do 'Pom' and 'Doro' mean?" lang="en">What do 'Pom' and 'Doro' mean?</h2>
+                    <p lang="en">
+                        <b data-amharic="ፖም" data-english="Pom" lang="en">Pom</b>
+                        <span data-amharic="ከፍራፍሬዎች አንዱ የሆነው (በፈርጆቹ 'Apple') የሚለውን የሚወክል ሲሆን፣ ከጤንነት እና ትኩረት ጋር የተያያዘ ነው።" data-english="stands for 'apple', representing a healthy focused work session." lang="en">stands for 'apple', representing a healthy focused work session.</span>
+                        <br>
+                        <b data-amharic="ዶሮ" data-english="Doro" lang="en">Doro</b>
+                        <span data-amharic="የሚወክለው ልክ ዶሮ እንቁላል ጥላ እረፍት እንደምታረገው ምሳሌ ጋር የተያያዘ ነው።" data-english="is inspired by the Amharic word for 'chicken', symbolizing a break—just as a chicken takes a break from laying eggs!" lang="en">is inspired by the Amharic word for 'chicken', symbolizing a break—just as a chicken takes a break from laying eggs!</span>
                     </p>
-                    <h3 data-amharic="የፖሞዶሮ ቴክኒክ አጭር ታሪክ">Short History of the Pomodoro Technique</h3>
-                    <p>
-                        The Pomodoro Technique was developed by Francesco Cirillo in the late 1980s. He used a tomato-shaped kitchen timer to break work into intervals, traditionally 25 minutes in length, separated by short breaks. This method helps improve focus and productivity by encouraging regular rest and reducing mental fatigue.
-                    </p>
+                    <h3 data-amharic="የፖሞዶሮ ቴክኒክ አጭር ታሪክ" data-english="Short History of the Pomodoro Technique" lang="en">Short History of the Pomodoro Technique</h3>
+                    <p data-amharic="ፖሞዶሮ ቴክኒክ በፍራንሲስኮ ቺሪሎ በ1980ዎቹ መጨረሻ የተሰራ ስልት ነው። እሱም የተለያዩ የጊዜ መቆጣጠሪዎችን በመጠቀም የሥራ ጊዜዎችን 25 ደቂቃ እና 5 ደቂቃ እረፍት መጠን ያስተካክላል️። ይህ ዘዴ ትኩረትን ና ምርታማነትን እንድናሻሻል ይረዳናል።" data-english="The Pomodoro Technique was developed by Francesco Cirillo in the late 1980s. He used a tomato-shaped kitchen timer to break work into periods, traditionally 25 minutes, separated by short breaks. This method helps improve focus and productivity by encouraging regular rest and reducing mental fatigue." lang="en">The Pomodoro Technique was developed by Francesco Cirillo in the late 1980s...</p>
                 </div>
             </div>
         </section>
