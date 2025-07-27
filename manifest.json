@@ -2,23 +2,23 @@
   "manifest_version": 3,
   "name": "Pom-or-doro",
   "version": "1.0.0",
-  "description": "A Pomodoro timer Chrome extension",
+  "description": "A Pomodoro timer made by an Ethiopian Chrome extension",
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "assets/images/extension.png",
-      "32": "assets/images/extension.png",
-      "48": "assets/images/extension.png",
-      "128": "assets/images/extension.png"
+      "16": "assets/images/pomordoro.png",
+      "32": "assets/images/pomordoro.png",
+      "48": "assets/images/pomordoro.png",
+      "128": "assets/images/pomordoro.png"
     }
   },
   "options_page": "options.html",
   "permissions": ["storage"],
   "icons": {
-    "16": "assets/images/extension.png",
-    "32": "assets/images/extension.png",
-    "48": "assets/images/extension.png",
-    "128": "assets/images/extension.png"
+      "16": "assets/images/pomordoro.png",
+      "32": "assets/images/pomordoro.png",
+      "48": "assets/images/pomordoro.png",
+      "128": "assets/images/pomordoro.png"
   },
   "background": {
     "service_worker": "background.js"

@@ -1,100 +1,161 @@
+:root {
+  --bg: #fff;
+  --text: #222;
+  --accent: #e57373;
+  --timer-bg: #f8f9fa;
+}
+
+body.theme-dark {
+  --bg: #23272f;
+  --text: #f8f9fa;
+  --accent: #64b5f6;
+  --timer-bg: #2c313a;
+}
+
+body.theme-ocean {
+  --bg: #e0f7fa;
+  --text: #006064;
+  --accent: #00bcd4;
+  --timer-bg: #b2ebf2;
+}
+
+body.theme-forest {
+  --bg: #e8f5e9;
+  --text: #1b5e20;
+  --accent: #43a047;
+  --timer-bg: #c8e6c9;
+}
+
+body.theme-ethiopian {
+  --bg: #009A49;
+  --text: #FFFFFF;
+  --accent: #FFC107;
+  --timer-bg: #D81B60;
+}
+
+body {
+  background: linear-gradient(120deg, var(--bg, #fff) 0%, var(--timer-bg) 100%);
+  color: var(--text, #222);
+  font-family: "Work Sans", "Abyssinica SIL", Arial, sans-serif;
+  margin: 0;
+  padding: 2rem;
+  min-height: 100vh;
+}
+
 .options-container {
-  background: var(--bg, #f8f9fa);
-  max-width: 420px;
-  margin: 48px auto;
-  padding: 2.5rem 2rem;
-  border-radius: 10px;
+  background: var(--bg, #fff);
+  border-radius: 18px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e0e0e0;
+  margin: 0 auto;
+  padding: 2.2rem 1.5rem;
+  max-width: 500px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  font-family: "Segoe UI", Arial, sans-serif;
-  color: var(--text, #222);
-  transition: background 0.3s;
 }
 
-.options-container h2 {
-  text-align: center;
-  color: var(--accent, #e57373);
-  margin-bottom: 2rem;
-  letter-spacing: 1px;
+h2 {
+  font-family: "Lily Script One", cursive;
   font-size: 2rem;
+  color: var(--accent, #e57373);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  letter-spacing: 1px;
   font-weight: 700;
 }
 
-.options-container label {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 1.2rem;
-  font-weight: 500;
-  color: var(--text, #222);
-  font-size: 1.08rem;
+.settings-group {
+  margin: 1rem 0;
 }
 
-.options-container input,
-.options-container select {
-  margin-top: 0.5rem;
-  padding: 0.6rem 1rem;
+.settings-group label {
+  display: block;
+  font-size: 1rem;
+  color: var(--text, #222);
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+}
+
+.settings-group input,
+.settings-group select {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 8px;
   border: 1px solid #ccc;
-  border-radius: 10px;
   font-size: 1rem;
   background: #fff;
   color: #222;
-  transition: border 0.2s, box-shadow 0.2s;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: border 0.2s, outline 0.2s;
 }
 
-.options-container input:focus,
-.options-container select:focus {
+.settings-group input:focus,
+.settings-group select:focus {
   border-color: var(--accent, #e57373);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(230, 115, 115, 0.15);
+  outline: 2px solid var(--accent, #e57373);
+  outline-offset: 2px;
 }
 
 .options-actions {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 2rem;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
 }
 
 .options-actions button {
   background: var(--accent, #e57373);
   color: #fff;
   border: none;
-  border-radius: 5px;
-  padding: 0.7rem 1.2rem;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.2s;
-  margin-left: 0.7rem;
+  border-radius: 8px;
   font-size: 1.08rem;
-  padding: 0.7rem 1.5rem;
   font-weight: 600;
-  border-radius: 10px;
+  padding: 0.7rem 1.3rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.options-actions button:hover {
+  background: #d32f2f;
+  transform: translateY(-1px);
+}
+
+.options-actions button:focus {
+  outline: 2px solid var(--accent, #e57373);
+  outline-offset: 2px;
+}
+
+.options-actions #resetBtn {
+  background: #666;
+}
+
+.options-actions #resetBtn:hover {
+  background: #555;
 }
 
 .status-message {
   text-align: center;
-  color: var(--accent, #e57373);
-  margin-top: 1.2rem;
-  font-size: 1.08rem;
-  min-height: 1.5em;
+  font-size: 1rem;
+  color: var(--text, #222);
+  margin-top: 1rem;
+  min-height: 1.5rem;
+}
+
+.theme-ethiopian .status-message {
+  color: #FFC107;
 }
 
 @media (max-width: 500px) {
   .options-container {
-    max-width: 98vw;
     padding: 1.2rem 0.5rem;
+    margin: 0.5rem;
+  }
+  .settings-group input,
+  .settings-group select {
+    font-size: 0.9rem;
   }
   .options-actions {
     flex-direction: column;
-    align-items: stretch;
-  }
-  .options-actions button {
-    margin: 0.5rem 0 0 0;
-    width: 100%;
+    gap: 0.7rem;
   }
 }
-
-/*# sourceMappingURL=options.css.map */
