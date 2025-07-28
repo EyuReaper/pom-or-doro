@@ -32,17 +32,18 @@ function sendTimerUpdate() {
 }
 
 async function playSoundNotification() {
-    const validSounds = ['standard', 'amharic'];
-    const sound = validSounds.includes(userSettings.selectedSound) ? userSettings.selectedSound : 'standard';
-    const soundPath = `assets/sounds/notification_${sound}.mp3`;
+    // CHANGED: Play sound based on currentMode instead of userSettings.selectedSound
+    const soundPath = currentMode === 'work' ? 'assets/sounds/apple-bite-chew-40.mp3' : 'assets/sounds/rooster-crowing.mp3';
 
     try {
         const audio = new Audio(chrome.runtime.getURL(soundPath));
         audio.volume = Math.max(0, Math.min(1, userSettings.soundVolume || 1.0));
         await audio.play();
+        console.log(`Played notification sound: ${soundPath} for ${currentMode} mode`);
     } catch (e) {
-        console.error("Error playing audio:", e);
+        console.error(`Error playing audio (${soundPath}):`, e);
     }
+    // END CHANGE
 }
 
 async function updateTimerState() {
@@ -86,7 +87,7 @@ async function handleSessionEnd() {
     try {
         chrome.notifications.create({
             type: 'basic',
-            iconUrl: 'assets/images/extension_128.png',
+            iconUrl: 'assets/images/pomordoro.png',
             title: notificationTitle,
             message: notificationMessage,
             priority: 2
@@ -106,7 +107,7 @@ async function loadSettings() {
             shortBreakTime: Number.isInteger(settings?.shortBreakTime) && settings.shortBreakTime > 0 ? settings.shortBreakTime : DEFAULT_SHORT_BREAK,
             longBreakTime: Number.isInteger(settings?.longBreakTime) && settings.longBreakTime > 0 ? settings.longBreakTime : DEFAULT_LONG_BREAK,
             pomodoroCountForLongBreak: Number.isInteger(settings?.pomodoroCountForLongBreak) && settings.pomodoroCountForLongBreak > 0 ? settings.pomodoroCountForLongBreak : DEFAULT_POMODORO_COUNT_FOR_LONG_BREAK,
-            selectedSound: ['standard', 'amharic'].includes(settings?.selectedSound) ? settings.selectedSound : 'standard',
+            // CHANGED: Removed selectedSound as it’s no longer used for notifications
             soundVolume: typeof settings?.soundVolume === 'number' && settings.soundVolume >= 0 && settings.soundVolume <= 1 ? settings.soundVolume : 1.0,
             theme: ['light', 'dark', 'ocean', 'forest', 'ethiopian'].includes(settings?.theme) ? settings.theme : 'light',
             language: ['en', 'am'].includes(settings?.language) ? settings.language : 'en'
@@ -122,7 +123,6 @@ async function loadSettings() {
             shortBreakTime: DEFAULT_SHORT_BREAK,
             longBreakTime: DEFAULT_LONG_BREAK,
             pomodoroCountForLongBreak: DEFAULT_POMODORO_COUNT_FOR_LONG_BREAK,
-            selectedSound: 'standard',
             soundVolume: 1.0,
             theme: 'light',
             language: 'en'

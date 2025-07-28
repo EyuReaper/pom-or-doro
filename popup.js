@@ -33,7 +33,7 @@ if (missingElements.length > 0) {
 }
 
 // Amharic numerals mapping
-const amharicNumerals = ['፲', '፩', '፪', '፫', '፬', '፭', '፮', '፯', '፰', '፱'];
+const amharicNumerals = ['00', '፩', '፪', '፫', '፬', '፭', '፮', '፯', '፰', '፱'];
 
 // State variables
 let wasStarted = false;

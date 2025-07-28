@@ -3,7 +3,6 @@ const shortBreakInput = document.getElementById('shortBreakInput');
 const longBreakInput = document.getElementById('longBreakInput');
 const pomosBeforeLongInput = document.getElementById('pomosBeforeLongInput');
 const themeSelect = document.getElementById('themeSelect');
-const soundSelect = document.getElementById('soundSelect');
 const languageSelect = document.getElementById('languageSelect');
 const saveBtn = document.getElementById('saveBtn');
 const resetBtn = document.getElementById('resetBtn');
@@ -64,7 +63,6 @@ chrome.storage.sync.get(defaultSettings, (settings) => {
     longBreakInput.value = settings.longBreakTime;
     pomosBeforeLongInput.value = settings.pomodoroCountForLongBreak;
     themeSelect.value = settings.theme;
-    soundSelect.value = settings.selectedSound;
     languageSelect.value = settings.language;
     applyTheme(settings.theme);
     applyLanguage(settings.language);
@@ -78,7 +76,6 @@ form.addEventListener('submit', (e) => {
     const longBreakTime = parseInt(longBreakInput.value);
     const pomodoroCountForLongBreak = parseInt(pomosBeforeLongInput.value);
     const theme = themeSelect.value;
-    const selectedSound = soundSelect.value;
     const language = languageSelect.value;
 
     if (workTime < 1 || shortBreakTime < 1 || longBreakTime < 1 || pomodoroCountForLongBreak < 1) {
@@ -123,7 +120,6 @@ resetBtn.addEventListener('click', () => {
         longBreakInput.value = defaultSettings.longBreakTime;
         pomosBeforeLongInput.value = defaultSettings.pomodoroCountForLongBreak;
         themeSelect.value = defaultSettings.theme;
-        soundSelect.value = defaultSettings.selectedSound;
         languageSelect.value = defaultSettings.language;
         applyTheme(defaultSettings.theme);
         applyLanguage(defaultSettings.language);
