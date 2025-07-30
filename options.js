@@ -1,7 +1,18 @@
+const DEFAULT_SETTINGS = {
+    workTime: 25,
+    shortBreakTime: 5,
+    longBreakTime: 15,
+    pomodoroCountForLongBreak: 4,
+    soundVolume: 1.0,
+    theme: 'light',
+    language: 'en'
+};
+
 const workInput = document.getElementById('workInput');
 const shortBreakInput = document.getElementById('shortBreakInput');
 const longBreakInput = document.getElementById('longBreakInput');
 const pomosBeforeLongInput = document.getElementById('pomosBeforeLongInput');
+const soundVolumeInput = document.getElementById('soundVolumeInput');
 const themeSelect = document.getElementById('themeSelect');
 const languageSelect = document.getElementById('languageSelect');
 const saveBtn = document.getElementById('saveBtn');
@@ -9,30 +20,20 @@ const resetBtn = document.getElementById('resetBtn');
 const statusMsg = document.getElementById('statusMsg');
 const form = document.getElementById('options-form');
 
-// Default settings
-const defaultSettings = {
-    workTime: 25,
-    shortBreakTime: 5,
-    longBreakTime: 15,
-    pomodoroCountForLongBreak: 4,
-    theme: 'light',
-    selectedSound: 'standard',
-    language: 'en'
-};
-
 /**
  * Applies the selected language to the UI elements using data-amharic attributes.
  * @param {string} lang - The language code ('en' or 'am').
  */
 function applyLanguage(lang) {
+    document.documentElement.setAttribute('data-lang', lang);
     document.querySelectorAll('[data-amharic]').forEach(el => {
         el.textContent = lang === 'am' ? el.dataset.amharic : el.dataset.english || el.textContent;
+        el.setAttribute('lang', lang);
     });
-    // Update select options
     document.querySelectorAll('option[data-amharic]').forEach(opt => {
         opt.textContent = lang === 'am' ? opt.dataset.amharic : opt.dataset.english;
+        opt.setAttribute('lang', lang);
     });
-    // Update document title
     document.title = lang === 'am' ? document.querySelector('title').dataset.amharic : document.querySelector('title').dataset.english;
 }
 
@@ -51,17 +52,25 @@ function applyTheme(theme) {
  * @param {string} lang - The language code ('en' or 'am').
  */
 function showStatusMessage(message, lang) {
-    statusMsg.textContent = lang === 'am' ? message.am : message.en;
-    statusMsg.classList.add('show');
-    setTimeout(() => statusMsg.classList.remove('show'), 3000);
+    if (statusMsg) {
+        statusMsg.textContent = lang === 'am' ? message.am : message.en;
+        statusMsg.classList.add('show');
+        setTimeout(() => statusMsg.classList.remove('show'), 3000);
+    }
 }
 
 // Load settings on page load
-chrome.storage.sync.get(defaultSettings, (settings) => {
+chrome.storage.sync.get(DEFAULT_SETTINGS, (settings) => {
+    if (chrome.runtime.lastError) {
+        console.error('Failed to load settings:', chrome.runtime.lastError.message);
+        showStatusMessage({ en: 'Error loading settings.', am: 'ቅንብሮችን መጫን አልተሳካም።' }, settings.language || 'en');
+        return;
+    }
     workInput.value = settings.workTime;
     shortBreakInput.value = settings.shortBreakTime;
     longBreakInput.value = settings.longBreakTime;
     pomosBeforeLongInput.value = settings.pomodoroCountForLongBreak;
+    soundVolumeInput.value = settings.soundVolume;
     themeSelect.value = settings.theme;
     languageSelect.value = settings.language;
     applyTheme(settings.theme);
@@ -75,11 +84,16 @@ form.addEventListener('submit', (e) => {
     const shortBreakTime = parseInt(shortBreakInput.value);
     const longBreakTime = parseInt(longBreakInput.value);
     const pomodoroCountForLongBreak = parseInt(pomosBeforeLongInput.value);
+    const soundVolume = parseFloat(soundVolumeInput.value);
     const theme = themeSelect.value;
     const language = languageSelect.value;
 
     if (workTime < 1 || shortBreakTime < 1 || longBreakTime < 1 || pomodoroCountForLongBreak < 1) {
         showStatusMessage({ en: 'Please enter valid durations (minimum 1).', am: 'እባክዎ ተገቢ ጊዜዎችን ያስገቡ (ቢያንስ 1)።' }, language);
+        return;
+    }
+    if (soundVolume < 0 || soundVolume > 1) {
+        showStatusMessage({ en: 'Sound volume must be between 0 and 1.', am: 'የድምፅ መጠን ከ0 እስከ 1 መሆን አለበት።' }, language);
         return;
     }
 
@@ -88,46 +102,40 @@ form.addEventListener('submit', (e) => {
         shortBreakTime,
         longBreakTime,
         pomodoroCountForLongBreak,
+        soundVolume,
         theme,
-        selectedSound,
         language
     };
 
-    chrome.storage.sync.set(settings, () => {
+    chrome.runtime.sendMessage({ action: 'saveSettings', settings }, () => {
         if (chrome.runtime.lastError) {
             showStatusMessage({ en: 'Error saving settings.', am: 'ቅንብሮችን በማስቀመጥ ላይ ስህተት ተከስቷል።' }, language);
             return;
         }
         applyTheme(theme);
         applyLanguage(language);
-        chrome.runtime.sendMessage({
-            action: 'updateSettings',
-            settings
-        });
         showStatusMessage({ en: 'Settings saved!', am: 'ቅንብሮች ተቀምጠዋል!' }, language);
     });
 });
 
 // Reset settings to defaults
 resetBtn.addEventListener('click', () => {
-    chrome.storage.sync.set(defaultSettings, () => {
+    chrome.storage.sync.set(DEFAULT_SETTINGS, () => {
         if (chrome.runtime.lastError) {
             showStatusMessage({ en: 'Error resetting settings.', am: 'ቅንብሮችን ዳግም ለማስጀመር ስህተት ተከስቷል።' }, languageSelect.value);
             return;
         }
-        workInput.value = defaultSettings.workTime;
-        shortBreakInput.value = defaultSettings.shortBreakTime;
-        longBreakInput.value = defaultSettings.longBreakTime;
-        pomosBeforeLongInput.value = defaultSettings.pomodoroCountForLongBreak;
-        themeSelect.value = defaultSettings.theme;
-        languageSelect.value = defaultSettings.language;
-        applyTheme(defaultSettings.theme);
-        applyLanguage(defaultSettings.language);
-        chrome.runtime.sendMessage({
-            action: 'updateSettings',
-            settings: defaultSettings
-        });
-        showStatusMessage({ en: 'Settings reset to defaults!', am: 'ቅንብሮች ወደ ቀድሞ ተመልሰዋል!' }, defaultSettings.language);
+        workInput.value = DEFAULT_SETTINGS.workTime;
+        shortBreakInput.value = DEFAULT_SETTINGS.shortBreakTime;
+        longBreakInput.value = DEFAULT_SETTINGS.longBreakTime;
+        pomosBeforeLongInput.value = DEFAULT_SETTINGS.pomodoroCountForLongBreak;
+        soundVolumeInput.value = DEFAULT_SETTINGS.soundVolume;
+        themeSelect.value = DEFAULT_SETTINGS.theme;
+        languageSelect.value = DEFAULT_SETTINGS.language;
+        applyTheme(DEFAULT_SETTINGS.theme);
+        applyLanguage(DEFAULT_SETTINGS.language);
+        chrome.runtime.sendMessage({ action: 'saveSettings', settings: DEFAULT_SETTINGS });
+        showStatusMessage({ en: 'Settings reset to defaults!', am: 'ቅንብሮች ወደ ቀድሞ ተመልሰዋል!' }, DEFAULT_SETTINGS.language);
     });
 });
 
@@ -136,7 +144,7 @@ languageSelect.addEventListener('change', () => {
     const language = languageSelect.value;
     applyLanguage(language);
     chrome.storage.sync.set({ language }, () => {
-        chrome.runtime.sendMessage({ action: 'updateSettings', settings: { language } });
+        chrome.runtime.sendMessage({ action: 'saveSettings', settings: { language } });
     });
 });
 
@@ -145,6 +153,6 @@ themeSelect.addEventListener('change', () => {
     const theme = themeSelect.value;
     applyTheme(theme);
     chrome.storage.sync.set({ theme }, () => {
-        chrome.runtime.sendMessage({ action: 'updateSettings', settings: { theme } });
+        chrome.runtime.sendMessage({ action: 'saveSettings', settings: { theme } });
     });
 });

@@ -1,11 +1,11 @@
 const DEFAULT_SETTINGS = {
-    theme: 'light',
-    language: 'en',
     workTime: 25,
     shortBreakTime: 5,
     longBreakTime: 15,
     pomodoroCountForLongBreak: 4,
-    selectedSound: 'standard'
+    soundVolume: 1.0,
+    theme: 'light',
+    language: 'en'
 };
 
 // DOM Selectors
@@ -38,7 +38,7 @@ const amharicNumerals = ['00', '፩', '፪', '፫', '፬', '፭', '፮', '፯', 
 // State variables
 let wasStarted = false;
 let isPaused = true;
-let workTime = DEFAULT_SETTINGS.workTime;
+let settings = { ...DEFAULT_SETTINGS };
 
 // Persistent aria-live region
 const liveRegion = document.createElement('div');
@@ -75,7 +75,7 @@ function updateDisplay({ timeLeft, pomodoroCount, isPaused: pausedState, mode })
     if (!timerDisplay || !sessionInfo || !sessionType || !startBtn || !pauseBtn) return;
 
     isPaused = pausedState;
-    const lang = selectors.languageSelect?.value || 'en';
+    const lang = settings.language;
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     const minStr = lang === 'am' ? toAmharicNumerals(minutes) : String(minutes).padStart(2, '0');
@@ -99,14 +99,14 @@ function updateDisplay({ timeLeft, pomodoroCount, isPaused: pausedState, mode })
 }
 
 /**
- * Resets the timer display to the initial work amount.
+ * Resets the timer display to the initial state based on mode.
  */
 function resetTimerDisplay() {
     const { timerDisplay, sessionInfo, sessionType, startBtn, pauseBtn } = selectors;
     if (!timerDisplay || !sessionInfo || !sessionType || !startBtn || !pauseBtn) return;
 
-    const lang = selectors.languageSelect?.value || 'en';
-    const minStr = lang === 'am' ? toAmharicNumerals(workTime) : String(workTime).padStart(2, '0');
+    const lang = settings.language;
+    const minStr = lang === 'am' ? toAmharicNumerals(settings.workTime) : String(settings.workTime).padStart(2, '0');
     timerDisplay.textContent = `${minStr}:00`;
     timerDisplay.classList.remove('break-mode');
     timerDisplay.classList.add('work-mode');
@@ -116,6 +116,7 @@ function resetTimerDisplay() {
     sessionType.textContent = lang === 'am' ? 'ፖም' : 'Work';
     startBtn.textContent = lang === 'am' ? 'ጀምር' : 'Start';
     startBtn.setAttribute('aria-label', startBtn.textContent);
+    ariaLiveUpdate(`${minStr}:00`, 'work', lang);
 }
 
 /**
@@ -126,9 +127,7 @@ function applyTheme(theme) {
     if (!selectors.themeSelect) return;
     document.body.className = `theme-${theme}`;
     selectors.themeSelect.value = theme;
-    // Ensure modal styles update if open
     if (selectors.aboutModal && selectors.aboutModal.getAttribute('aria-hidden') === 'false') {
-        console.log(`Reapplying theme-${theme} to modal`);
         selectors.aboutModal.classList.remove('theme-light', 'theme-dark', 'theme-ocean', 'theme-forest', 'theme-ethiopian');
         selectors.aboutModal.classList.add(`theme-${theme}`);
     }
@@ -146,30 +145,27 @@ function applyLanguage(lang) {
         el.textContent = lang === 'am' ? amharicText : englishText;
         el.setAttribute('lang', lang);
     });
-
     document.querySelectorAll('option[data-amharic]').forEach(opt => {
         opt.textContent = lang === 'am' ? opt.dataset.amharic : opt.dataset.english || opt.textContent;
         opt.setAttribute('lang', lang);
     });
-
     const title = document.querySelector('title');
     if (title) {
         title.textContent = lang === 'am' ? title.dataset.amharic : title.dataset.english || title.textContent;
     }
-
     if (isPaused) resetTimerDisplay();
     else chrome.runtime.sendMessage({ action: 'getTimerState' }, updateDisplay);
 }
 
 // Initialize settings
-chrome.storage.sync.get(DEFAULT_SETTINGS, (settings) => {
+chrome.storage.sync.get(DEFAULT_SETTINGS, (data) => {
     if (chrome.runtime.lastError) {
         console.error('Failed to load settings:', chrome.runtime.lastError.message);
         return;
     }
+    settings = { ...settings, ...data };
     applyTheme(settings.theme);
     applyLanguage(settings.language);
-    workTime = settings.workTime;
     if (isPaused) resetTimerDisplay();
 });
 
@@ -180,84 +176,65 @@ chrome.runtime.sendMessage({ action: 'getTimerState' }, (response) => {
         resetTimerDisplay();
         return;
     }
-    if (response && typeof response === 'object' && response !== null) {
+    if (response && typeof response === 'object') {
         updateDisplay(response);
     } else {
         resetTimerDisplay();
     }
 });
 
+// Timer update listener
+chrome.runtime.onMessage.addListener((msg) => {
+    if (msg.action === 'timerUpdate') {
+        console.log('Received timer update:', msg);
+        updateDisplay(msg);
+    }
+});
+
 // Event Listeners
-// Timer controls
 if (selectors.startBtn) {
     selectors.startBtn.addEventListener('click', () => {
-        console.log('Start button clicked');
         wasStarted = true;
-        chrome.runtime.sendMessage({ action: 'start' }, (response) => {
-            if (chrome.runtime.lastError) {
-                console.error('Failed to start timer:', chrome.runtime.lastError.message);
-            }
-        });
+        chrome.runtime.sendMessage({ action: 'start' });
     });
 }
 
 if (selectors.pauseBtn) {
     selectors.pauseBtn.addEventListener('click', () => {
-        console.log('Pause button clicked');
         wasStarted = true;
-        chrome.runtime.sendMessage({ action: 'pause' }, (response) => {
-            if (chrome.runtime.lastError) {
-                console.error('Failed to pause timer:', chrome.runtime.lastError.message);
-            }
-        });
+        chrome.runtime.sendMessage({ action: 'pause' });
     });
 }
 
 if (selectors.resetBtn) {
     selectors.resetBtn.addEventListener('click', () => {
-        console.log('Reset button clicked');
         wasStarted = false;
-        chrome.runtime.sendMessage({ action: 'reset' }, (response) => {
-            if (chrome.runtime.lastError) {
-                console.error('Failed to reset timer:', chrome.runtime.lastError.message);
-            }
-            resetTimerDisplay();
-        });
+        chrome.runtime.sendMessage({ action: 'reset' });
+        resetTimerDisplay();
     });
 }
 
-// Theme and language changes
 if (selectors.themeSelect) {
     selectors.themeSelect.addEventListener('change', () => {
-        console.log('Theme changed:', selectors.themeSelect.value);
-        const selectedTheme = selectors.themeSelect.value;
-        applyTheme(selectedTheme);
-        chrome.storage.sync.set({ theme: selectedTheme }, () => {
-            if (chrome.runtime.lastError) {
-                console.error('Failed to save theme:', chrome.runtime.lastError.message);
-            }
-        });
+        const theme = selectors.themeSelect.value;
+        applyTheme(theme);
+        settings.theme = theme;
+        chrome.storage.sync.set({ theme });
     });
 }
 
 if (selectors.languageSelect) {
     selectors.languageSelect.addEventListener('change', () => {
-        console.log('Language changed:', selectors.languageSelect.value);
-        const selectedLanguage = selectors.languageSelect.value;
-        applyLanguage(selectedLanguage);
-        chrome.storage.sync.set({ language: selectedLanguage }, () => {
-            if (chrome.runtime.lastError) {
-                console.error('Failed to save language:', chrome.runtime.lastError.message);
-            }
-        });
+        const language = selectors.languageSelect.value;
+        applyLanguage(language);
+        settings.language = language;
+        chrome.storage.sync.set({ language });
     });
 }
 
-// Settings link
 if (selectors.settingsLink) {
     selectors.settingsLink.addEventListener('click', (e) => {
         e.preventDefault();
-        console.log('Settings link clicked');
         chrome.runtime.openOptionsPage();
     });
 }
@@ -265,10 +242,10 @@ if (selectors.settingsLink) {
 // Storage change listener
 chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'sync') return;
-    if (changes.theme) applyTheme(changes.theme.newValue);
-    if (changes.language) applyLanguage(changes.language.newValue);
-    if (changes.workTime) {
-        workTime = changes.workTime.newValue;
+    if (changes.settings) {
+        settings = { ...settings, ...changes.settings.newValue };
+        applyTheme(settings.theme);
+        applyLanguage(settings.language);
         if (isPaused) resetTimerDisplay();
     }
 });
@@ -276,19 +253,12 @@ chrome.storage.onChanged.addListener((changes, area) => {
 // Modal controls
 function toggleModal(show) {
     const { aboutModal, aboutBtn, closeAbout } = selectors;
-    if (!aboutModal || !aboutBtn || !closeAbout) {
-        console.error('Modal elements missing:', { aboutModal, aboutBtn, closeAbout });
-        return;
-    }
-    console.log(`Toggling modal: ${show ? 'show' : 'hide'}`);
+    if (!aboutModal || !aboutBtn || !closeAbout) return;
     aboutModal.setAttribute('aria-hidden', show ? 'false' : 'true');
     if (show) {
         trapFocus(aboutModal);
         closeAbout.focus();
-        // Apply current theme to modal
-        const currentTheme = selectors.themeSelect?.value || 'light';
-        aboutModal.classList.add(`theme-${currentTheme}`);
-        console.log(`Applied theme-${currentTheme} to modal on open`);
+        aboutModal.classList.add(`theme-${settings.theme}`);
     } else {
         aboutBtn.focus();
         aboutModal.classList.remove('theme-light', 'theme-dark', 'theme-ocean', 'theme-forest', 'theme-ethiopian');
@@ -296,21 +266,13 @@ function toggleModal(show) {
 }
 
 if (selectors.aboutBtn) {
-    selectors.aboutBtn.addEventListener('click', () => {
-        console.log('About button clicked');
-        toggleModal(true);
-    });
+    selectors.aboutBtn.addEventListener('click', () => toggleModal(true));
 }
 
 if (selectors.closeAbout) {
-    selectors.closeAbout.addEventListener('click', () => {
-        console.log('Close modal button clicked');
-        toggleModal(false);
-    });
-
+    selectors.closeAbout.addEventListener('click', () => toggleModal(false));
     selectors.closeAbout.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === 'Space') {
-            console.log('Close modal via keyboard');
             e.preventDefault();
             toggleModal(false);
         }
@@ -320,33 +282,23 @@ if (selectors.closeAbout) {
 if (selectors.aboutModal) {
     selectors.aboutModal.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            console.log('Escape key pressed in modal');
             e.preventDefault();
             toggleModal(false);
         }
     });
-
     selectors.aboutModal.addEventListener('click', (e) => {
         if (e.target === selectors.aboutModal) {
-            console.log('Clicked outside modal content');
             toggleModal(false);
         }
     });
 }
 
-// Focus trapping for modal
 function trapFocus(modal) {
     if (!modal) return;
     const focusableElements = modal.querySelectorAll('button, [tabindex="0"]');
     const firstElement = focusableElements[0];
     const lastElement = focusableElements[focusableElements.length - 1];
 
-    if (!firstElement || !lastElement) {
-        console.warn('No focusable elements in modal');
-        return;
-    }
-
-    console.log('Trapping focus in modal');
     modal.addEventListener('keydown', function handler(e) {
         if (e.key === 'Tab') {
             if (e.shiftKey && document.activeElement === firstElement) {
@@ -364,11 +316,3 @@ function trapFocus(modal) {
         }
     });
 }
-
-// Timer update listener
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-    if (msg.action === 'timerUpdate') {
-        console.log('Received timer update:', msg);
-        updateDisplay(msg);
-    }
-});

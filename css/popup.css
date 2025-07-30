@@ -429,3 +429,33 @@ select:hover {
         padding: 1.5rem 1rem;
     }
 }
+
+#statusMsg {
+    display: none;
+    color: #4caf50;
+    font-family: 'Work Sans', sans-serif;
+    margin-top: 10px;
+    text-align: center;
+}
+#statusMsg.show {
+    display: block;
+}
+#resetBtn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin-left: 10px;
+    cursor: pointer;
+    font-family: 'Work Sans', sans-serif;
+    border-radius: 5px;
+}
+#resetBtn:hover {
+    background-color: #d32f2f;
+}
+.timer-display.work-mode {
+    color: #d32f2f; /* Example for work mode */
+}
+.timer-display.break-mode {
+    color: #4caf50; /* Example for break mode */
+}
