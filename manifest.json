@@ -13,7 +13,7 @@
     }
   },
   "options_page": "options.html",
-  "permissions": ["storage"],
+  "permissions": ["storage", "notifications"],
   "icons": {
       "16": "assets/images/pomordoro.png",
       "32": "assets/images/pomordoro.png",
@@ -23,5 +23,15 @@
   "background": {
     "service_worker": "background.js"
   },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/sounds/*",
+        "assets/images/*",
+        "css/popup.css"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "default_locale": "en"
 }

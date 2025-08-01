@@ -32,7 +32,6 @@ function sendTimerUpdate() {
 }
 
 async function playSoundNotification() {
-    // CHANGED: Play sound based on currentMode instead of userSettings.selectedSound
     const soundPath = currentMode === 'work' ? 'assets/sounds/apple-bite-chew-40.mp3' : 'assets/sounds/rooster-crowing.mp3';
 
     try {
@@ -43,15 +42,13 @@ async function playSoundNotification() {
     } catch (e) {
         console.error(`Error playing audio (${soundPath}):`, e);
     }
-    // END CHANGE
 }
 
 async function updateTimerState() {
+    console.log("Updating timer state, timeLeft:", timeLeft); // Debug log
     if (timeLeft > 0) {
         timeLeft--;
-    }
-
-    if (timeLeft <= 0) {
+    } else if (timeLeft !== null) { // Ensure timeLeft is initialized
         clearInterval(timerIntervalId);
         timerIntervalId = null;
         await handleSessionEnd();
@@ -107,7 +104,6 @@ async function loadSettings() {
             shortBreakTime: Number.isInteger(settings?.shortBreakTime) && settings.shortBreakTime > 0 ? settings.shortBreakTime : DEFAULT_SHORT_BREAK,
             longBreakTime: Number.isInteger(settings?.longBreakTime) && settings.longBreakTime > 0 ? settings.longBreakTime : DEFAULT_LONG_BREAK,
             pomodoroCountForLongBreak: Number.isInteger(settings?.pomodoroCountForLongBreak) && settings.pomodoroCountForLongBreak > 0 ? settings.pomodoroCountForLongBreak : DEFAULT_POMODORO_COUNT_FOR_LONG_BREAK,
-            // CHANGED: Removed selectedSound as it’s no longer used for notifications
             soundVolume: typeof settings?.soundVolume === 'number' && settings.soundVolume >= 0 && settings.soundVolume <= 1 ? settings.soundVolume : 1.0,
             theme: ['light', 'dark', 'ocean', 'forest', 'ethiopian'].includes(settings?.theme) ? settings.theme : 'light',
             language: ['en', 'am'].includes(settings?.language) ? settings.language : 'en'
@@ -188,16 +184,16 @@ async function saveTimerState() {
 }
 
 function startTimerInterval() {
-    if (!isPaused && timerIntervalId !== null) {
-        return;
+    console.log("Starting timer interval, isPaused:", isPaused); // Debug log
+    if (isPaused) {
+        isPaused = false;
+        if (timerIntervalId) {
+            clearInterval(timerIntervalId);
+        }
+        timerIntervalId = setInterval(updateTimerState, 1000);
+        saveTimerState();
+        sendTimerUpdate();
     }
-    isPaused = false;
-    if (timerIntervalId) {
-        clearInterval(timerIntervalId);
-    }
-    timerIntervalId = setInterval(updateTimerState, 1000);
-    saveTimerState();
-    sendTimerUpdate();
 }
 
 function pauseTimer() {

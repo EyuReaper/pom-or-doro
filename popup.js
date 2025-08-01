@@ -8,6 +8,10 @@ const DEFAULT_SETTINGS = {
     language: 'en'
 };
 
+let settings = { ...DEFAULT_SETTINGS }; // Global settings variable
+let isPaused = true;
+let wasStarted = false;
+
 // DOM Selectors
 const selectors = {
     timerDisplay: document.getElementById('timer-display'),
@@ -21,7 +25,8 @@ const selectors = {
     aboutBtn: document.getElementById('about-btn'),
     aboutModal: document.getElementById('about-modal'),
     closeAbout: document.getElementById('close-about'),
-    settingsLink: document.getElementById('settings-link')
+    settingsLink: document.getElementById('settings-link'),
+    statusMsg: document.getElementById('statusMsg')
 };
 
 // Validate DOM elements
@@ -32,27 +37,27 @@ if (missingElements.length > 0) {
     console.error(`Missing DOM elements: ${missingElements.join(', ')}`);
 }
 
-// Amharic numerals mapping
-const amharicNumerals = ['00', '፩', '፪', '፫', '፬', '፭', '፮', '፯', '፰', '፱'];
-
-// State variables
-let wasStarted = false;
-let isPaused = true;
-let settings = { ...DEFAULT_SETTINGS };
-
-// Persistent aria-live region
-const liveRegion = document.createElement('div');
-liveRegion.setAttribute('aria-live', 'assertive');
-liveRegion.setAttribute('style', 'position: absolute; left: -9999px;');
-document.body.appendChild(liveRegion);
+// Amharic numerals mapping (extended up to 50, corrected 0 to ኵ)
+const amharicNumerals = {
+    0: '0', 1: '፩', 2: '፪', 3: '፫', 4: '፬', 5: '፭', 6: '፮', 7: '፯', 8: '፰', 9: '፱',
+    10: '፲', 20: '፳', 30: '፴', 40: '፵', 50: '፶'
+};
 
 /**
- * Converts a number to Amharic numerals.
- * @param {number} number - The number to convert.
+ * Converts a number to Amharic numerals up to 50.
+ * @param {number} number - The number to convert (0-50).
  * @returns {string} The number in Amharic numerals.
  */
 function toAmharicNumerals(number) {
-    return number.toString().split('').map(digit => amharicNumerals[parseInt(digit)]).join('');
+    if (number < 0 || number > 50) {
+        console.warn(`Number ${number} out of range (0-50) for Amharic numerals, using default format`);
+        return String(number).padStart(2, '0');
+    }
+    if (number === 0) return amharicNumerals[0]; // Explicitly handle 0 as ኵ
+    if (number < 10) return amharicNumerals[number];
+    const tens = Math.floor(number / 10) * 10;
+    const units = number % 10;
+    return `${amharicNumerals[tens]}${units > 0 ? amharicNumerals[units] : ''}`;
 }
 
 /**
@@ -71,11 +76,11 @@ function ariaLiveUpdate(timeStr, mode, lang) {
  * @param {object} state - The timer state object.
  */
 function updateDisplay({ timeLeft, pomodoroCount, isPaused: pausedState, mode }) {
-    const { timerDisplay, sessionInfo, sessionType, startBtn, pauseBtn } = selectors;
-    if (!timerDisplay || !sessionInfo || !sessionType || !startBtn || !pauseBtn) return;
+    const { timerDisplay, sessionInfo, sessionType, startBtn, pauseBtn, statusMsg } = selectors;
+    if (!timerDisplay || !sessionInfo || !sessionType || !startBtn || !pauseBtn || !statusMsg) return;
 
     isPaused = pausedState;
-    const lang = settings.language;
+    const lang = settings.language; // Now safe to access
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     const minStr = lang === 'am' ? toAmharicNumerals(minutes) : String(minutes).padStart(2, '0');
@@ -96,18 +101,27 @@ function updateDisplay({ timeLeft, pomodoroCount, isPaused: pausedState, mode })
 
     timerDisplay.classList.toggle('work-mode', mode === 'work');
     timerDisplay.classList.toggle('break-mode', mode === 'break');
+
+    // Update status message
+    if (isPaused) {
+        statusMsg.textContent = lang === 'am' ? 'የጊዜ መጠን ዝግጁ ነው' : 'Timer ready';
+        statusMsg.classList.add('show');
+    } else {
+        statusMsg.classList.remove('show');
+    }
 }
 
 /**
  * Resets the timer display to the initial state based on mode.
  */
 function resetTimerDisplay() {
-    const { timerDisplay, sessionInfo, sessionType, startBtn, pauseBtn } = selectors;
-    if (!timerDisplay || !sessionInfo || !sessionType || !startBtn || !pauseBtn) return;
+    const { timerDisplay, sessionInfo, sessionType, startBtn, pauseBtn, statusMsg } = selectors;
+    if (!timerDisplay || !sessionInfo || !sessionType || !startBtn || !pauseBtn || !statusMsg) return;
 
     const lang = settings.language;
     const minStr = lang === 'am' ? toAmharicNumerals(settings.workTime) : String(settings.workTime).padStart(2, '0');
-    timerDisplay.textContent = `${minStr}:00`;
+    const secStr = lang === 'am' ? toAmharicNumerals(0) : '00'; // Use ኵኵ for 00 in Amharic
+    timerDisplay.textContent = `${minStr}:${secStr}`;
     timerDisplay.classList.remove('break-mode');
     timerDisplay.classList.add('work-mode');
     startBtn.disabled = false;
@@ -116,7 +130,11 @@ function resetTimerDisplay() {
     sessionType.textContent = lang === 'am' ? 'ፖም' : 'Work';
     startBtn.textContent = lang === 'am' ? 'ጀምር' : 'Start';
     startBtn.setAttribute('aria-label', startBtn.textContent);
-    ariaLiveUpdate(`${minStr}:00`, 'work', lang);
+    ariaLiveUpdate(`${minStr}:${secStr}`, 'work', lang);
+
+    // Reset status message
+    statusMsg.textContent = lang === 'am' ? 'የጊዜ መጠን ዝግጁ ነው' : 'Timer ready';
+    statusMsg.classList.add('show');
 }
 
 /**
@@ -157,13 +175,19 @@ function applyLanguage(lang) {
     else chrome.runtime.sendMessage({ action: 'getTimerState' }, updateDisplay);
 }
 
+// Persistent aria-live region
+const liveRegion = document.createElement('div');
+liveRegion.setAttribute('aria-live', 'assertive');
+liveRegion.setAttribute('style', 'position: absolute; left: -9999px;');
+document.body.appendChild(liveRegion);
+
 // Initialize settings
 chrome.storage.sync.get(DEFAULT_SETTINGS, (data) => {
     if (chrome.runtime.lastError) {
         console.error('Failed to load settings:', chrome.runtime.lastError.message);
         return;
     }
-    settings = { ...settings, ...data };
+    settings = { ...DEFAULT_SETTINGS, ...data }; // Update global settings
     applyTheme(settings.theme);
     applyLanguage(settings.language);
     if (isPaused) resetTimerDisplay();
@@ -174,9 +198,7 @@ chrome.runtime.sendMessage({ action: 'getTimerState' }, (response) => {
     if (chrome.runtime.lastError) {
         console.error('Failed to get timer state:', chrome.runtime.lastError.message);
         resetTimerDisplay();
-        return;
-    }
-    if (response && typeof response === 'object') {
+    } else if (response && typeof response === 'object') {
         updateDisplay(response);
     } else {
         resetTimerDisplay();
@@ -184,33 +206,47 @@ chrome.runtime.sendMessage({ action: 'getTimerState' }, (response) => {
 });
 
 // Timer update listener
-chrome.runtime.onMessage.addListener((msg) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.action === 'timerUpdate') {
         console.log('Received timer update:', msg);
         updateDisplay(msg);
     }
+    sendResponse(); // Acknowledge message
 });
 
 // Event Listeners
 if (selectors.startBtn) {
     selectors.startBtn.addEventListener('click', () => {
         wasStarted = true;
-        chrome.runtime.sendMessage({ action: 'start' });
+        console.log("Sending start message"); // Debug log
+        chrome.runtime.sendMessage({ action: 'start' }, (response) => {
+            if (chrome.runtime.lastError) {
+                console.error('Failed to start timer:', chrome.runtime.lastError.message);
+            }
+        });
     });
 }
 
 if (selectors.pauseBtn) {
     selectors.pauseBtn.addEventListener('click', () => {
         wasStarted = true;
-        chrome.runtime.sendMessage({ action: 'pause' });
+        chrome.runtime.sendMessage({ action: 'pause' }, (response) => {
+            if (chrome.runtime.lastError) {
+                console.error('Failed to pause timer:', chrome.runtime.lastError.message);
+            }
+        });
     });
 }
 
 if (selectors.resetBtn) {
     selectors.resetBtn.addEventListener('click', () => {
         wasStarted = false;
-        chrome.runtime.sendMessage({ action: 'reset' });
-        resetTimerDisplay();
+        chrome.runtime.sendMessage({ action: 'reset' }, (response) => {
+            if (chrome.runtime.lastError) {
+                console.error('Failed to reset timer:', chrome.runtime.lastError.message);
+            }
+            resetTimerDisplay();
+        });
     });
 }
 
