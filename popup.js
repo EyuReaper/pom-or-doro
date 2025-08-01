@@ -37,27 +37,27 @@ if (missingElements.length > 0) {
     console.error(`Missing DOM elements: ${missingElements.join(', ')}`);
 }
 
-// Amharic numerals mapping (extended up to 50, corrected 0 to ኵ)
+// Amharic numerals mapping (extended up to 59)
 const amharicNumerals = {
-    0: '0', 1: '፩', 2: '፪', 3: '፫', 4: '፬', 5: '፭', 6: '፮', 7: '፯', 8: '፰', 9: '፱',
-    10: '፲', 20: '፳', 30: '፴', 40: '፵', 50: '፶'
+    0: '00', 1: '፩', 2: '፪', 3: '፫', 4: '፬', 5: '፭', 6: '፮', 7: '፯', 8: '፰', 9: '፱',
+    10: '፲', 11: '፲፩', 12: '፲፪', 13: '፲፫', 14: '፲፬', 15: '፲፭', 16: '፲፮', 17: '፲፯', 18: '፲፰', 19: '፲፱',
+    20: '፳', 21: '፳፩', 22: '፳፪', 23: '፳፫', 24: '፳፬', 25: '፳፭', 26: '፳፮', 27: '፳፯', 28: '፳፰', 29: '፳፱',
+    30: '፴', 31: '፴፩', 32: '፴፪', 33: '፴፫', 34: '፴፬', 35: '፴፭', 36: '፴፮', 37: '፴፯', 38: '፴፰', 39: '፴፱',
+    40: '፵', 41: '፵፩', 42: '፵፪', 43: '፵፫', 44: '፵፬', 45: '፵፭', 46: '፵፮', 47: '፵፯', 48: '፵፰', 49: '፵፱',
+    50: '፶', 51: '፶፩', 52: '፶፪', 53: '፶፫', 54: '፶፬', 55: '፶፭', 56: '፶፮', 57: '፶፯', 58: '፶፰', 59: '፶፱'
 };
 
 /**
- * Converts a number to Amharic numerals up to 50.
- * @param {number} number - The number to convert (0-50).
+ * Converts a number to Amharic numerals up to 59.
+ * @param {number} number - The number to convert (0-59).
  * @returns {string} The number in Amharic numerals.
  */
 function toAmharicNumerals(number) {
-    if (number < 0 || number > 50) {
-        console.warn(`Number ${number} out of range (0-50) for Amharic numerals, using default format`);
+    if (number < 0 || number > 59) {
+        console.warn(`Number ${number} out of range (0-59) for Amharic numerals, using default format`);
         return String(number).padStart(2, '0');
     }
-    if (number === 0) return amharicNumerals[0]; // Explicitly handle 0 as ኵ
-    if (number < 10) return amharicNumerals[number];
-    const tens = Math.floor(number / 10) * 10;
-    const units = number % 10;
-    return `${amharicNumerals[tens]}${units > 0 ? amharicNumerals[units] : ''}`;
+    return amharicNumerals[number] || String(number).padStart(2, '0'); // Fallback to default if mapping missing
 }
 
 /**
@@ -80,7 +80,7 @@ function updateDisplay({ timeLeft, pomodoroCount, isPaused: pausedState, mode })
     if (!timerDisplay || !sessionInfo || !sessionType || !startBtn || !pauseBtn || !statusMsg) return;
 
     isPaused = pausedState;
-    const lang = settings.language; // Now safe to access
+    const lang = settings.language;
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     const minStr = lang === 'am' ? toAmharicNumerals(minutes) : String(minutes).padStart(2, '0');
@@ -102,12 +102,16 @@ function updateDisplay({ timeLeft, pomodoroCount, isPaused: pausedState, mode })
     timerDisplay.classList.toggle('work-mode', mode === 'work');
     timerDisplay.classList.toggle('break-mode', mode === 'break');
 
-    // Update status message
-    if (isPaused) {
-        statusMsg.textContent = lang === 'am' ? 'የጊዜ መጠን ዝግጁ ነው' : 'Timer ready';
-        statusMsg.classList.add('show');
+    // Update status message based on state
+    if (isPaused && !wasStarted) {
+        statusMsg.textContent = lang === 'am' ? 'የጊዜ ቆጣሪ ዝግጁ ' : 'Timer ready';
+    } else if (isPaused && wasStarted) {
+        statusMsg.textContent = lang === 'am' ? 'የጊዜ ቆጣሪ ቆሟል' : 'Timer paused';
     } else {
         statusMsg.classList.remove('show');
+    }
+    if (isPaused) {
+        statusMsg.classList.add('show');
     }
 }
 
@@ -120,7 +124,7 @@ function resetTimerDisplay() {
 
     const lang = settings.language;
     const minStr = lang === 'am' ? toAmharicNumerals(settings.workTime) : String(settings.workTime).padStart(2, '0');
-    const secStr = lang === 'am' ? toAmharicNumerals(0) : '00'; // Use ኵኵ for 00 in Amharic
+    const secStr = lang === 'am' ? toAmharicNumerals(0) : '00'; // Use 00 for 0 in Amharic
     timerDisplay.textContent = `${minStr}:${secStr}`;
     timerDisplay.classList.remove('break-mode');
     timerDisplay.classList.add('work-mode');
@@ -132,9 +136,10 @@ function resetTimerDisplay() {
     startBtn.setAttribute('aria-label', startBtn.textContent);
     ariaLiveUpdate(`${minStr}:${secStr}`, 'work', lang);
 
-    // Reset status message
+    // Reset status message to "Timer ready"
     statusMsg.textContent = lang === 'am' ? 'የጊዜ መጠን ዝግጁ ነው' : 'Timer ready';
     statusMsg.classList.add('show');
+    wasStarted = false; // Reset wasStarted on reset
 }
 
 /**
