@@ -12,6 +12,12 @@ let settings = { ...DEFAULT_SETTINGS }; // Global settings variable
 let isPaused = true;
 let wasStarted = false;
 
+// Persistent aria-live region
+const liveRegion = document.createElement('div');
+liveRegion.setAttribute('aria-live', 'assertive');
+liveRegion.setAttribute('style', 'position: absolute; left: -9999px;');
+document.body.appendChild(liveRegion);
+
 // DOM Selectors
 const selectors = {
     timerDisplay: document.getElementById('timer-display'),
@@ -37,7 +43,6 @@ if (missingElements.length > 0) {
     console.error(`Missing DOM elements: ${missingElements.join(', ')}`);
 }
 
-// Amharic numerals mapping (extended up to 59)
 const amharicNumerals = {
     0: '00', 1: '፩', 2: '፪', 3: '፫', 4: '፬', 5: '፭', 6: '፮', 7: '፯', 8: '፰', 9: '፱',
     10: '፲', 11: '፲፩', 12: '፲፪', 13: '፲፫', 14: '፲፬', 15: '፲፭', 16: '፲፮', 17: '፲፯', 18: '፲፰', 19: '፲፱',
@@ -47,34 +52,19 @@ const amharicNumerals = {
     50: '፶', 51: '፶፩', 52: '፶፪', 53: '፶፫', 54: '፶፬', 55: '፶፭', 56: '፶፮', 57: '፶፯', 58: '፶፰', 59: '፶፱'
 };
 
-/**
- * Converts a number to Amharic numerals up to 59.
- * @param {number} number - The number to convert (0-59).
- * @returns {string} The number in Amharic numerals.
- */
 function toAmharicNumerals(number) {
     if (number < 0 || number > 59) {
         console.warn(`Number ${number} out of range (0-59) for Amharic numerals, using default format`);
         return String(number).padStart(2, '0');
     }
-    return amharicNumerals[number] || String(number).padStart(2, '0'); // Fallback to default if mapping missing
+    return amharicNumerals[number] || String(number).padStart(2, '0');
 }
 
-/**
- * Announces timer updates to screen readers.
- * @param {string} timeStr - The formatted time string.
- * @param {string} mode - The current mode ('work' or 'break').
- * @param {string} lang - The language code ('en', 'am').
- */
 function ariaLiveUpdate(timeStr, mode, lang) {
     const modeText = lang === 'am' ? (mode === 'work' ? 'ፖም' : 'ዶሮ') : mode.charAt(0).toUpperCase() + mode.slice(1);
     liveRegion.textContent = `${modeText}: ${timeStr}`;
 }
 
-/**
- * Updates the display elements based on the current timer state.
- * @param {object} state - The timer state object.
- */
 function updateDisplay({ timeLeft, pomodoroCount, isPaused: pausedState, mode }) {
     const { timerDisplay, sessionInfo, sessionType, startBtn, pauseBtn, statusMsg } = selectors;
     if (!timerDisplay || !sessionInfo || !sessionType || !startBtn || !pauseBtn || !statusMsg) return;
@@ -102,11 +92,10 @@ function updateDisplay({ timeLeft, pomodoroCount, isPaused: pausedState, mode })
     timerDisplay.classList.toggle('work-mode', mode === 'work');
     timerDisplay.classList.toggle('break-mode', mode === 'break');
 
-    // Update status message based on state
     if (isPaused && !wasStarted) {
-        statusMsg.textContent = lang === 'am' ? 'የጊዜ ቆጣሪ ዝግጁ ' : 'Timer ready';
+        statusMsg.textContent = lang === 'am' ? 'ጊዜ ቆጣሪ ዝግጁ ' : 'Timer ready';
     } else if (isPaused && wasStarted) {
-        statusMsg.textContent = lang === 'am' ? 'የጊዜ ቆጣሪ ቆሟል' : 'Timer paused';
+        statusMsg.textContent = lang === 'am' ? 'ጊዜ ቆጣሪ ቆሟል' : 'Timer paused';
     } else {
         statusMsg.classList.remove('show');
     }
@@ -115,16 +104,13 @@ function updateDisplay({ timeLeft, pomodoroCount, isPaused: pausedState, mode })
     }
 }
 
-/**
- * Resets the timer display to the initial state based on mode.
- */
 function resetTimerDisplay() {
     const { timerDisplay, sessionInfo, sessionType, startBtn, pauseBtn, statusMsg } = selectors;
     if (!timerDisplay || !sessionInfo || !sessionType || !startBtn || !pauseBtn || !statusMsg) return;
 
     const lang = settings.language;
     const minStr = lang === 'am' ? toAmharicNumerals(settings.workTime) : String(settings.workTime).padStart(2, '0');
-    const secStr = lang === 'am' ? toAmharicNumerals(0) : '00'; // Use 00 for 0 in Amharic
+    const secStr = lang === 'am' ? toAmharicNumerals(0) : '00';
     timerDisplay.textContent = `${minStr}:${secStr}`;
     timerDisplay.classList.remove('break-mode');
     timerDisplay.classList.add('work-mode');
@@ -136,16 +122,11 @@ function resetTimerDisplay() {
     startBtn.setAttribute('aria-label', startBtn.textContent);
     ariaLiveUpdate(`${minStr}:${secStr}`, 'work', lang);
 
-    // Reset status message to "Timer ready"
     statusMsg.textContent = lang === 'am' ? 'የጊዜ መጠን ዝግጁ ነው' : 'Timer ready';
     statusMsg.classList.add('show');
-    wasStarted = false; // Reset wasStarted on reset
+    wasStarted = false;
 }
 
-/**
- * Applies the selected theme to the document body and modal.
- * @param {string} theme - The theme name.
- */
 function applyTheme(theme) {
     if (!selectors.themeSelect) return;
     document.body.className = `theme-${theme}`;
@@ -156,10 +137,6 @@ function applyTheme(theme) {
     }
 }
 
-/**
- * Applies the selected language to UI elements.
- * @param {string} lang - The language code ('en', 'am').
- */
 function applyLanguage(lang) {
     document.documentElement.setAttribute('data-lang', lang);
     document.querySelectorAll('[data-amharic]').forEach(el => {
@@ -177,28 +154,29 @@ function applyLanguage(lang) {
         title.textContent = lang === 'am' ? title.dataset.amharic : title.dataset.english || title.textContent;
     }
     if (isPaused) resetTimerDisplay();
-    else chrome.runtime.sendMessage({ action: 'getTimerState' }, updateDisplay);
+    else chrome.runtime.sendMessage({ action: 'getTimerState' }, (response) => {
+        if (chrome.runtime.lastError) {
+            console.error('Failed to get timer state:', chrome.runtime.lastError.message);
+            resetTimerDisplay();
+        } else if (response && typeof response === 'object') {
+            updateDisplay(response);
+        } else {
+            resetTimerDisplay();
+        }
+    });
 }
 
-// Persistent aria-live region
-const liveRegion = document.createElement('div');
-liveRegion.setAttribute('aria-live', 'assertive');
-liveRegion.setAttribute('style', 'position: absolute; left: -9999px;');
-document.body.appendChild(liveRegion);
-
-// Initialize settings
 chrome.storage.sync.get(DEFAULT_SETTINGS, (data) => {
     if (chrome.runtime.lastError) {
         console.error('Failed to load settings:', chrome.runtime.lastError.message);
         return;
     }
-    settings = { ...DEFAULT_SETTINGS, ...data }; // Update global settings
+    settings = { ...DEFAULT_SETTINGS, ...data };
     applyTheme(settings.theme);
     applyLanguage(settings.language);
     if (isPaused) resetTimerDisplay();
 });
 
-// Request initial timer state
 chrome.runtime.sendMessage({ action: 'getTimerState' }, (response) => {
     if (chrome.runtime.lastError) {
         console.error('Failed to get timer state:', chrome.runtime.lastError.message);
@@ -210,24 +188,60 @@ chrome.runtime.sendMessage({ action: 'getTimerState' }, (response) => {
     }
 });
 
-// Timer update listener
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.action === 'timerUpdate') {
         console.log('Received timer update:', msg);
         updateDisplay(msg);
     }
-    sendResponse(); // Acknowledge message
+    if (msg.action === 'playSoundNotification') {
+        const audio = new Audio(chrome.runtime.getURL(msg.mode === 'work' ? 'assets/sounds/apple-bite-chew-40.mp3' : 'assets/sounds/rooster-crowing.mp3'));
+        audio.volume = settings.soundVolume || 1.0;
+        audio.play().catch(e => console.error('Failed to play sound:', e));
+        sendResponse();
+    }
+    sendResponse();
 });
 
-// Event Listeners
 if (selectors.startBtn) {
     selectors.startBtn.addEventListener('click', () => {
         wasStarted = true;
-        console.log("Sending start message"); // Debug log
+        console.log("Sending start message to background");
         chrome.runtime.sendMessage({ action: 'start' }, (response) => {
             if (chrome.runtime.lastError) {
                 console.error('Failed to start timer:', chrome.runtime.lastError.message);
+                // Retry once if connection fails
+                if (chrome.runtime.lastError.message.includes("Receiving end does not exist")) {
+                    console.log("Retrying start message...");
+                    chrome.runtime.sendMessage({ action: 'start' }, (retryResponse) => {
+                        if (chrome.runtime.lastError) {
+                            console.error('Retry failed:', chrome.runtime.lastError.message);
+                        } else {
+                            console.log('Retry successful');
+                        }
+                    });
+                }
+            } else {
+                console.log('Start message sent successfully');
             }
+        });
+        // Force service worker activation with persistent connection
+        const port = chrome.runtime.connect({ name: 'activateWorker' });
+        port.postMessage({ action: 'ping' }); // Send a ping to wake the service worker
+        port.onMessage.addListener((msg) => {
+            if (msg.action === 'pong') {
+                console.log('Service worker responded:', msg);
+            }
+        });
+        port.onDisconnect.addListener(() => {
+            console.log('Service worker disconnected');
+            // Attempt to reconnect on disconnect
+            setTimeout(() => {
+                const newPort = chrome.runtime.connect({ name: 'activateWorker' });
+                newPort.postMessage({ action: 'ping' });
+                newPort.onMessage.addListener((msg) => {
+                    if (msg.action === 'pong') console.log('Reconnected service worker responded:', msg);
+                });
+            }, 1000);
         });
     });
 }
@@ -280,7 +294,6 @@ if (selectors.settingsLink) {
     });
 }
 
-// Storage change listener
 chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'sync') return;
     if (changes.settings) {
@@ -291,7 +304,6 @@ chrome.storage.onChanged.addListener((changes, area) => {
     }
 });
 
-// Modal controls
 function toggleModal(show) {
     const { aboutModal, aboutBtn, closeAbout } = selectors;
     if (!aboutModal || !aboutBtn || !closeAbout) return;
@@ -337,6 +349,7 @@ if (selectors.aboutModal) {
 function trapFocus(modal) {
     if (!modal) return;
     const focusableElements = modal.querySelectorAll('button, [tabindex="0"]');
+    if (focusableElements.length === 0) return;
     const firstElement = focusableElements[0];
     const lastElement = focusableElements[focusableElements.length - 1];
 
