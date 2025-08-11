@@ -17,7 +17,7 @@ function formatTime(seconds) {
 }
 
 function sendTimerUpdate() {
-    const displayMode = currentMode === 'work' ? 'work' : 'break'; // Map for popup.js
+    const displayMode = currentMode === 'work' ? 'work' : 'break'; // Maps 'long-break' and 'short-break' to 'break' for popup simplicity
     chrome.runtime.sendMessage({
         action: 'timerUpdate',
         timeLeft,
@@ -31,24 +31,16 @@ function sendTimerUpdate() {
     });
 }
 
-async function playSoundNotification() {
-    const soundPath = currentMode === 'work' ? 'assets/sounds/apple-bite-chew-40.mp3' : 'assets/sounds/rooster-crowing.mp3';
-
-    try {
-        const audio = new Audio(chrome.runtime.getURL(soundPath));
-        audio.volume = Math.max(0, Math.min(1, userSettings.soundVolume || 1.0));
-        await audio.play();
-        console.log(`Played notification sound: ${soundPath} for ${currentMode} mode`);
-    } catch (e) {
-        console.error(`Error playing audio (${soundPath}):`, e);
-    }
-}
-
 async function updateTimerState() {
-    console.log("Updating timer state, timeLeft:", timeLeft); // Debug log
+    console.log("Updating timer state, timeLeft:", timeLeft);
+    if (timeLeft === null) {
+        console.error("timeLeft is uninitialized, resetting timer");
+        resetTimer(false);
+        return;
+    }
     if (timeLeft > 0) {
         timeLeft--;
-    } else if (timeLeft !== null) { // Ensure timeLeft is initialized
+    } else {
         clearInterval(timerIntervalId);
         timerIntervalId = null;
         await handleSessionEnd();
@@ -79,7 +71,11 @@ async function handleSessionEnd() {
     timeLeft = newTime * 60;
     isPaused = true;
 
-    await playSoundNotification();
+    // Removed playSoundNotification, replaced with message to popup
+    chrome.runtime.sendMessage({
+        action: 'playSoundNotification',
+        mode: currentMode
+    }).catch(e => console.error("Error sending sound notification:", e));
 
     try {
         chrome.notifications.create({
@@ -110,7 +106,7 @@ async function loadSettings() {
         };
         console.log("Settings loaded:", userSettings);
         if (timeLeft === null) {
-            timeLeft = userSettings.workTime * 60; // Initialize timeLeft
+            timeLeft = userSettings.workTime * 60;
         }
     } catch (error) {
         console.error("Error loading settings:", error);
@@ -184,15 +180,14 @@ async function saveTimerState() {
 }
 
 function startTimerInterval() {
-    console.log("Starting timer interval, isPaused:", isPaused); // Debug log
-    if (isPaused) {
+    console.log("Starting timer interval, isPaused:", isPaused);
+    if (isPaused && !timerIntervalId) {
         isPaused = false;
-        if (timerIntervalId) {
-            clearInterval(timerIntervalId);
-        }
         timerIntervalId = setInterval(updateTimerState, 1000);
         saveTimerState();
         sendTimerUpdate();
+    } else if (!isPaused) {
+        console.warn("Timer already running, ignoring start request");
     }
 }
 
@@ -233,6 +228,7 @@ function skipBreak() {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     (async () => {
         try {
+            console.log("Received message:", request.action);
             switch (request.action) {
                 case 'start':
                     startTimerInterval();
@@ -274,21 +270,37 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse({ error: e.message });
         }
     })();
-    return true; // Keep message channel open for async responses
+    return true;
 });
 
 chrome.runtime.onInstalled.addListener(async () => {
     console.log("Pom-or-doro installed or updated!");
+    // Removed audioInstance initialization and load
     await loadSettings();
     await loadTimerState();
     sendTimerUpdate();
 });
+
+// Add startup log to confirm service worker is running
+console.log("Service worker started at:", new Date().toISOString());
 
 (async () => {
     await loadSettings();
     await loadTimerState();
     sendTimerUpdate();
 })();
+
+chrome.runtime.onConnect.addListener((port) => {
+    console.log('Connected:', port.name, 'at', new Date().toISOString());
+    port.onMessage.addListener((msg) => {
+        console.log('Message from popup:', msg.action, 'at', new Date().toISOString());
+        if (msg.action === 'ping') {
+            port.postMessage({ action: 'pong', timestamp: Date.now() });
+            console.log('Sent pong response to popup at:', new Date().toISOString());
+        }
+    });
+    port.onDisconnect.addListener(() => console.log('Disconnected:', port.name, 'at', new Date().toISOString()));
+});
 
 chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'sync' && changes.settings) {
