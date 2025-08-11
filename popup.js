@@ -132,7 +132,7 @@ function applyTheme(theme) {
     document.body.className = `theme-${theme}`;
     selectors.themeSelect.value = theme;
     if (selectors.aboutModal && selectors.aboutModal.getAttribute('aria-hidden') === 'false') {
-        selectors.aboutModal.classList.remove('theme-light', 'theme-dark', 'theme-ocean', 'theme-forest', 'theme-ethiopian');
+        selectors.aboutModal.classList.remove('theme-light', 'theme-dark', 'theme-waillord', 'theme-ivy', 'theme-ethiopian');
         selectors.aboutModal.classList.add(`theme-${theme}`);
     }
 }
@@ -314,7 +314,7 @@ function toggleModal(show) {
         aboutModal.classList.add(`theme-${settings.theme}`);
     } else {
         aboutBtn.focus();
-        aboutModal.classList.remove('theme-light', 'theme-dark', 'theme-ocean', 'theme-forest', 'theme-ethiopian');
+        aboutModal.classList.remove('theme-light', 'theme-dark', 'theme-waillord', 'theme-ivy', 'theme-ethiopian');
     }
 }
 

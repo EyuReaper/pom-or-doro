@@ -46,24 +46,23 @@ body {
     --accent: #ff6f61;
 }
 
-.theme-ocean {
-    --bg: #e0f7fa;
-    --text: #006064;
-    --timer-bg: #b2ebf2;
-    --button-bg: #80deea;
-    --button-hover: #4dd0e1;
-    --accent: #0097a7;
+.theme-waillord { /* የዐሳጌታ */
+    --bg:  #1F5FCF;
+    --text: #282C3C;
+    --timer-bg: #DCC699;
+    --button-bg: #D7CFE4;
+    --button-hover: #DCC699; 
+    --accent: #282C3C;
 }
 
-.theme-forest {
-    --bg: #e8f5e9;
-    --text: #2e7d32;
-    --timer-bg: #c8e6c9;
-    --button-bg: #81c784;
-    --button-hover: #4caf50;
-    --accent: #388e3c;
+.theme-ivy { /* ሃረግ */
+    --bg: #4DAEAC;
+    --text: #203430;
+    --timer-bg: #4DAEAC;
+    --button-bg: #E86772;
+    --button-hover: #D94D5A; /* Slightly darker shade for hover */
+    --accent: #203430;
 }
-
 .theme-ethiopian {
     --bg: #006241;
     --text: #FFFFFF;
