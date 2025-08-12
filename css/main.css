@@ -7,23 +7,23 @@
 
 body.theme-dark {
   --bg: #1e252d;
-  --text: #e0e6ed;
+  --text: #1e252d;
   --accent: #4a90e2;
   --timer-bg: #2a323c;
 }
 
-body.theme-ocean {
-  --bg: #d6f0fa;
-  --text: #004d61;
-  --accent: #00a7d0;
-  --timer-bg: #a8e4f0;
+body.theme-waillord { /* የዐሳጌታ */
+  --bg: #D7CFE4;
+  --text: #282C3C;
+  --accent: #1F5FCF;
+  --timer-bg: #D7CFE4;
 }
 
-body.theme-forest {
-  --bg: #e0f2e9;
-  --text: #1a4d2e;
-  --accent: #2e7d32;
-  --timer-bg: #b7e1cd;
+body.theme-ivy { /* ሃረግ */
+  --bg: #4DAEAC;
+  --text: #203430;
+  --accent: #E86772;
+  --timer-bg: #4DAEAC;
 }
 
 body.theme-ethiopian {

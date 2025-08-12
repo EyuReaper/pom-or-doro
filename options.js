@@ -12,7 +12,7 @@ const workInput = document.getElementById('workInput');
 const shortBreakInput = document.getElementById('shortBreakInput');
 const longBreakInput = document.getElementById('longBreakInput');
 const pomosBeforeLongInput = document.getElementById('pomosBeforeLongInput');
-const soundVolumeInput = document.getElementById('soundVolumeInput');
+const soundVolume = document.getElementById('soundVolume'); // Fixed to match HTML id
 const themeSelect = document.getElementById('themeSelect');
 const languageSelect = document.getElementById('languageSelect');
 const saveBtn = document.getElementById('saveBtn');
@@ -39,7 +39,7 @@ function applyLanguage(lang) {
 
 /**
  * Applies the selected theme to the document body.
- * @param {string} theme - The theme name (e.g., 'light', 'ethiopian').
+ * @param {string} theme - The theme name (e.g., 'light', 'ethiopian', 'waillord', 'ivy').
  */
 function applyTheme(theme) {
     document.body.className = `theme-${theme}`;
@@ -70,7 +70,7 @@ chrome.storage.sync.get(DEFAULT_SETTINGS, (settings) => {
     shortBreakInput.value = settings.shortBreakTime;
     longBreakInput.value = settings.longBreakTime;
     pomosBeforeLongInput.value = settings.pomodoroCountForLongBreak;
-    soundVolumeInput.value = settings.soundVolume;
+    soundVolume.value = settings.soundVolume; // Updated to use corrected variable
     themeSelect.value = settings.theme;
     languageSelect.value = settings.language;
     applyTheme(settings.theme);
@@ -84,7 +84,7 @@ form.addEventListener('submit', (e) => {
     const shortBreakTime = parseInt(shortBreakInput.value);
     const longBreakTime = parseInt(longBreakInput.value);
     const pomodoroCountForLongBreak = parseInt(pomosBeforeLongInput.value);
-    const soundVolume = parseFloat(soundVolumeInput.value);
+    const soundVolume = parseFloat(soundVolume.value); // Updated to use corrected variable
     const theme = themeSelect.value;
     const language = languageSelect.value;
 
@@ -129,7 +129,7 @@ resetBtn.addEventListener('click', () => {
         shortBreakInput.value = DEFAULT_SETTINGS.shortBreakTime;
         longBreakInput.value = DEFAULT_SETTINGS.longBreakTime;
         pomosBeforeLongInput.value = DEFAULT_SETTINGS.pomodoroCountForLongBreak;
-        soundVolumeInput.value = DEFAULT_SETTINGS.soundVolume;
+        soundVolume.value = DEFAULT_SETTINGS.soundVolume; // Updated to use corrected variable
         themeSelect.value = DEFAULT_SETTINGS.theme;
         languageSelect.value = DEFAULT_SETTINGS.language;
         applyTheme(DEFAULT_SETTINGS.theme);
