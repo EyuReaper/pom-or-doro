@@ -431,7 +431,7 @@ select:hover {
 
 #statusMsg {
     display: none;
-    color: #4caf50;
+    color: var(--accent);
     font-family: 'Work Sans', sans-serif;
     margin-top: 10px;
     text-align: center;
