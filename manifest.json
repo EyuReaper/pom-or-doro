@@ -4,24 +4,23 @@
   "version": "1.0.0",
   "description": "A Pomodoro timer made by an Ethiopian Chrome extension",
   "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "assets/images/pomordoro.png",
-      "32": "assets/images/pomordoro.png",
-      "48": "assets/images/pomordoro.png",
-      "128": "assets/images/pomordoro.png"
-    }
+    "default_popup": "popup.html"
   },
   "options_page": "options.html",
-  "permissions": ["storage", "notifications","activeTab"],
+  "permissions": [
+    "storage",
+    "notifications",
+    "offscreen"
+  ],
   "icons": {
-      "16": "assets/images/pomordoro.png",
-      "32": "assets/images/pomordoro.png",
-      "48": "assets/images/pomordoro.png",
-      "128": "assets/images/pomordoro.png"
+    "16": "assets/images/pomordoro.png",
+    "32": "assets/images/pomordoro.png",
+    "48": "assets/images/pomordoro.png",
+    "128": "assets/images/pomordoro.png"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "web_accessible_resources": [
     {
@@ -29,7 +28,9 @@
         "assets/sounds/apple-bite-chew-40.mp3",
         "assets/sounds/rooster-crowing.mp3",
         "assets/images/*",
-        "css/popup.css"
+        "css/popup.css",
+        "offscreen.html",
+        "offscreen.js"
       ],
       "matches": ["<all_urls>"]
     }
