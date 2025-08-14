@@ -370,3 +370,7 @@ function trapFocus(modal) {
         }
     });
 }
+
+document.getElementById('testSound').addEventListener('click', () => {
+    new Audio('assets/sounds/apple-bite-chew-40.mp3').play();
+});

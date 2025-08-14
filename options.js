@@ -3,7 +3,6 @@ const DEFAULT_SETTINGS = {
     shortBreakTime: 5,
     longBreakTime: 15,
     pomodoroCountForLongBreak: 4,
-    soundVolume: 1.0,
     theme: 'light',
     language: 'en'
 };
@@ -12,7 +11,6 @@ const workInput = document.getElementById('workInput');
 const shortBreakInput = document.getElementById('shortBreakInput');
 const longBreakInput = document.getElementById('longBreakInput');
 const pomosBeforeLongInput = document.getElementById('pomosBeforeLongInput');
-const soundVolume = document.getElementById('soundVolume'); // Fixed to match HTML id
 const themeSelect = document.getElementById('themeSelect');
 const languageSelect = document.getElementById('languageSelect');
 const saveBtn = document.getElementById('saveBtn');
@@ -70,7 +68,6 @@ chrome.storage.sync.get(DEFAULT_SETTINGS, (settings) => {
     shortBreakInput.value = settings.shortBreakTime;
     longBreakInput.value = settings.longBreakTime;
     pomosBeforeLongInput.value = settings.pomodoroCountForLongBreak;
-    soundVolume.value = settings.soundVolume; // Updated to use corrected variable
     themeSelect.value = settings.theme;
     languageSelect.value = settings.language;
     applyTheme(settings.theme);
@@ -84,16 +81,11 @@ form.addEventListener('submit', (e) => {
     const shortBreakTime = parseInt(shortBreakInput.value);
     const longBreakTime = parseInt(longBreakInput.value);
     const pomodoroCountForLongBreak = parseInt(pomosBeforeLongInput.value);
-    const soundVolume = parseFloat(soundVolume.value); // Updated to use corrected variable
     const theme = themeSelect.value;
     const language = languageSelect.value;
 
     if (workTime < 1 || shortBreakTime < 1 || longBreakTime < 1 || pomodoroCountForLongBreak < 1) {
         showStatusMessage({ en: 'Please enter valid durations (minimum 1).', am: 'እባክዎ ተገቢ ጊዜዎችን ያስገቡ (ቢያንስ 1)።' }, language);
-        return;
-    }
-    if (soundVolume < 0 || soundVolume > 1) {
-        showStatusMessage({ en: 'Sound volume must be between 0 and 1.', am: 'የድምፅ መጠን ከ0 እስከ 1 መሆን አለበት።' }, language);
         return;
     }
 
@@ -102,7 +94,6 @@ form.addEventListener('submit', (e) => {
         shortBreakTime,
         longBreakTime,
         pomodoroCountForLongBreak,
-        soundVolume,
         theme,
         language
     };
@@ -129,7 +120,6 @@ resetBtn.addEventListener('click', () => {
         shortBreakInput.value = DEFAULT_SETTINGS.shortBreakTime;
         longBreakInput.value = DEFAULT_SETTINGS.longBreakTime;
         pomosBeforeLongInput.value = DEFAULT_SETTINGS.pomodoroCountForLongBreak;
-        soundVolume.value = DEFAULT_SETTINGS.soundVolume; // Updated to use corrected variable
         themeSelect.value = DEFAULT_SETTINGS.theme;
         languageSelect.value = DEFAULT_SETTINGS.language;
         applyTheme(DEFAULT_SETTINGS.theme);

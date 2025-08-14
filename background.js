@@ -53,6 +53,7 @@ async function handleSessionEnd() {
     let notificationMessage = '';
     let nextMode = '';
     let newTime = 0;
+    let soundFile = '';
 
     if (currentMode === 'work') {
         pomodoroCount++;
@@ -60,21 +61,24 @@ async function handleSessionEnd() {
         notificationMessage = 'Time for a break!';
         nextMode = pomodoroCount % userSettings.pomodoroCountForLongBreak === 0 ? 'long-break' : 'short-break';
         newTime = nextMode === 'long-break' ? userSettings.longBreakTime : userSettings.shortBreakTime;
+        soundFile = 'assets/sounds/apple-bite-chew-40.mp3'; // Play for work (pomodoro) end
     } else {
         notificationTitle = 'Break over!';
         notificationMessage = 'Back to work!';
         nextMode = 'work';
         newTime = userSettings.workTime;
+        soundFile = 'assets/sounds/rooster-crowing.mp3'; // Play for break (doro) end
     }
 
     currentMode = nextMode;
     timeLeft = newTime * 60;
     isPaused = true;
 
-    // Removed playSoundNotification, replaced with message to popup
+    // Send message to play sound with the appropriate file
     chrome.runtime.sendMessage({
         action: 'playSoundNotification',
-        mode: currentMode
+        mode: currentMode,
+        soundFile: soundFile
     }).catch(e => console.error("Error sending sound notification:", e));
 
     try {
@@ -261,6 +265,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     await saveSettings(request.settings);
                     sendResponse({});
                     break;
+                case 'playSoundNotification':
+                    const audio = new Audio(chrome.runtime.getURL(request.soundFile));
+                    try {
+                        await audio.play();
+                        console.log("Sound played successfully in response to playSoundNotification:", request.soundFile);
+                    } catch (e) {
+                        console.error("Audio play failed in playSoundNotification:", e);
+                    }
+                    sendResponse({});
+                    break;
                 default:
                     console.warn("Unknown message action:", request.action);
                     sendResponse({ error: "Unknown action" });
@@ -275,7 +289,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 chrome.runtime.onInstalled.addListener(async () => {
     console.log("Pom-or-doro installed or updated!");
-    // Removed audioInstance initialization and load
     await loadSettings();
     await loadTimerState();
     sendTimerUpdate();
