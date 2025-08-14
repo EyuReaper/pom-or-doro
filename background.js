@@ -10,6 +10,7 @@ let pomodoroCount = 0;
 let isPaused = true;
 let userSettings = {};
 let offscreenDocumentId = null;
+let offscreenReady = false; // [ADDED] Track offscreen document readiness
 
 function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
@@ -72,8 +73,8 @@ async function handleSessionEnd() {
     timeLeft = newTime * 60;
     isPaused = true;
 
-    // [CHANGED] Enhanced logging and attempt auto-open (may fail due to policy)
-    if (offscreenDocumentId) {
+    // [CHANGED] Enhanced logging and ensure offscreen is ready before sending playSound
+    if (offscreenDocumentId && offscreenReady) {
         console.log("Sending playSound message for mode:", currentMode);
         chrome.runtime.sendMessage({
             action: 'playSound',
@@ -82,11 +83,21 @@ async function handleSessionEnd() {
         }).then(() => console.log("playSound message sent"))
           .catch(e => console.error("Failed to send playSound message:", e));
     } else {
-        console.error("Offscreen document not available, sound playback disabled");
+        console.warn("Offscreen document not ready or unavailable, sound playback skipped. offscreenReady:", offscreenReady, "offscreenDocumentId:", offscreenDocumentId);
+        if (!offscreenDocumentId) {
+            await createOffscreenDocument(); // Attempt to recreate if not available
+            if (offscreenDocumentId && offscreenReady) {
+                console.log("Recreated offscreen document, resending playSound");
+                chrome.runtime.sendMessage({
+                    action: 'playSound',
+                    mode: currentMode,
+                    volume: userSettings.soundVolume || 1.0
+                }).catch(e => console.error("Failed to resend playSound message:", e));
+            }
+        }
     }
 
     try {
-        // Create notification with click action to open popup
         const notificationId = 'sessionEnd_' + Date.now();
         chrome.notifications.create(notificationId, {
             type: 'basic',
@@ -97,7 +108,7 @@ async function handleSessionEnd() {
         });
         console.log("Notification created with ID:", notificationId);
 
-        // [ADDED] Attempt to auto-open popup (may be blocked by Chrome policy)
+        // [ADDED] Attempt to auto-open popup (may fail due to policy)
         try {
             console.log("Attempting to auto-open popup");
             chrome.action.openPopup();
@@ -113,7 +124,6 @@ async function handleSessionEnd() {
 }
 
 async function createOffscreenDocument() {
-    // [CHANGED] Only close document if it exists, avoiding unnecessary error
     if (offscreenDocumentId) {
         try {
             const documents = await chrome.offscreen.getDocument();
@@ -136,8 +146,26 @@ async function createOffscreenDocument() {
             });
             offscreenDocumentId = 'audio-offscreen';
             console.log("Offscreen document created successfully");
+
+            // [ADDED] Wait for offscreen to be ready by sending a ping
+            return new Promise(resolve => {
+                const checkReady = () => {
+                    chrome.runtime.sendMessage({ action: 'pingOffscreen' }, response => {
+                        if (chrome.runtime.lastError) {
+                            console.warn("Offscreen not ready yet, retrying...", chrome.runtime.lastError);
+                            setTimeout(checkReady, 100); // Retry after 100ms
+                        } else {
+                            offscreenReady = true;
+                            console.log("Offscreen document is ready");
+                            resolve();
+                        }
+                    });
+                };
+                checkReady();
+            });
         } catch (e) {
             console.error("Failed to create offscreen document:", e);
+            offscreenDocumentId = null;
         }
     } else {
         console.error("Offscreen API not supported by this Chrome version, sound playback disabled");
@@ -278,7 +306,6 @@ function skipBreak() {
     }
 }
 
-// [ADDED] Handle notification click to open popup (optional fallback)
 chrome.notifications.onClicked.addListener((notificationId) => {
     console.log("Notification clicked, opening popup for ID:", notificationId);
     chrome.action.openPopup();
@@ -291,6 +318,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             switch (request.action) {
                 case 'start':
                     console.log("Attempting to create offscreen document");
+                    offscreenReady = false; // Reset readiness
                     await createOffscreenDocument();
                     if (offscreenDocumentId) {
                         console.log("Sending preloadAudio message");
