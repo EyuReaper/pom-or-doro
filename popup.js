@@ -7,7 +7,6 @@ const DEFAULT_SETTINGS = {
     theme: 'light',
     language: 'en'
 };
-
 let settings = { ...DEFAULT_SETTINGS }; // Global settings variable
 let isPaused = true;
 let wasStarted = false;
@@ -68,7 +67,6 @@ function ariaLiveUpdate(timeStr, mode, lang) {
 function updateDisplay({ timeLeft, pomodoroCount, isPaused: pausedState, mode }) {
     const { timerDisplay, sessionInfo, sessionType, startBtn, pauseBtn, statusMsg } = selectors;
     if (!timerDisplay || !sessionInfo || !sessionType || !startBtn || !pauseBtn || !statusMsg) return;
-
     isPaused = pausedState;
     const lang = settings.language;
     const minutes = Math.floor(timeLeft / 60);
@@ -76,22 +74,17 @@ function updateDisplay({ timeLeft, pomodoroCount, isPaused: pausedState, mode })
     const minStr = lang === 'am' ? toAmharicNumerals(minutes) : String(minutes).padStart(2, '0');
     const secStr = lang === 'am' ? toAmharicNumerals(seconds) : String(seconds).padStart(2, '0');
     const timeStr = `${minStr}:${secStr}`;
-
     timerDisplay.textContent = timeStr;
     sessionInfo.textContent = lang === 'am' ? `ክፍለ-ጊዜ: ${toAmharicNumerals(pomodoroCount + 1)}` : `Session: ${pomodoroCount + 1}`;
     sessionType.textContent = lang === 'am' ? (mode === 'work' ? 'ፖም' : 'ዶሮ') : mode.charAt(0).toUpperCase() + mode.slice(1);
-
     ariaLiveUpdate(timeStr, mode, lang);
-
     startBtn.disabled = !isPaused;
     pauseBtn.disabled = isPaused;
     startBtn.textContent = isPaused && wasStarted ? (lang === 'am' ? 'ቀጥል' : 'Resume') : (lang === 'am' ? 'ጀምር' : 'Start');
     startBtn.setAttribute('aria-label', startBtn.textContent);
     pauseBtn.setAttribute('aria-label', lang === 'am' ? 'አቁም' : 'Pause');
-
     timerDisplay.classList.toggle('work-mode', mode === 'work');
     timerDisplay.classList.toggle('break-mode', mode === 'break');
-
     if (isPaused && !wasStarted) {
         statusMsg.textContent = lang === 'am' ? 'ጊዜ ቆጣሪ ዝግጁ ' : 'Timer ready';
     } else if (isPaused && wasStarted) {
@@ -107,7 +100,6 @@ function updateDisplay({ timeLeft, pomodoroCount, isPaused: pausedState, mode })
 function resetTimerDisplay() {
     const { timerDisplay, sessionInfo, sessionType, startBtn, pauseBtn, statusMsg } = selectors;
     if (!timerDisplay || !sessionInfo || !sessionType || !startBtn || !pauseBtn || !statusMsg) return;
-
     const lang = settings.language;
     const minStr = lang === 'am' ? toAmharicNumerals(settings.workTime) : String(settings.workTime).padStart(2, '0');
     const secStr = lang === 'am' ? toAmharicNumerals(0) : '00';
@@ -121,7 +113,6 @@ function resetTimerDisplay() {
     startBtn.textContent = lang === 'am' ? 'ጀምር' : 'Start';
     startBtn.setAttribute('aria-label', startBtn.textContent);
     ariaLiveUpdate(`${minStr}:${secStr}`, 'work', lang);
-
     statusMsg.textContent = lang === 'am' ? 'የጊዜ መጠን ዝግጁ ነው' : 'Timer ready';
     statusMsg.classList.add('show');
     wasStarted = false;
@@ -193,12 +184,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         console.log('Received timer update:', msg);
         updateDisplay(msg);
     }
-    if (msg.action === 'playSoundNotification') {
-        const audio = new Audio(chrome.runtime.getURL(msg.mode === 'work' ? 'assets/sounds/apple-bite-chew-40.mp3' : 'assets/sounds/rooster-crowing.mp3'));
-        audio.volume = settings.soundVolume || 1.0;
-        audio.play().catch(e => console.error('Failed to play sound:', e));
-        sendResponse();
-    }
+    // [CHANGED] Remove playSoundNotification handler as background handles it
     sendResponse();
 });
 
@@ -226,7 +212,7 @@ if (selectors.startBtn) {
         });
         // Force service worker activation with persistent connection
         const port = chrome.runtime.connect({ name: 'activateWorker' });
-        port.postMessage({ action: 'ping' }); // Send a ping to wake the service worker
+        port.postMessage({ action: 'ping' });
         port.onMessage.addListener((msg) => {
             if (msg.action === 'pong') {
                 console.log('Service worker responded:', msg);
@@ -234,7 +220,6 @@ if (selectors.startBtn) {
         });
         port.onDisconnect.addListener(() => {
             console.log('Service worker disconnected');
-            // Attempt to reconnect on disconnect
             setTimeout(() => {
                 const newPort = chrome.runtime.connect({ name: 'activateWorker' });
                 newPort.postMessage({ action: 'ping' });
@@ -352,7 +337,6 @@ function trapFocus(modal) {
     if (focusableElements.length === 0) return;
     const firstElement = focusableElements[0];
     const lastElement = focusableElements[focusableElements.length - 1];
-
     modal.addEventListener('keydown', function handler(e) {
         if (e.key === 'Tab') {
             if (e.shiftKey && document.activeElement === firstElement) {
@@ -371,6 +355,7 @@ function trapFocus(modal) {
     });
 }
 
-document.getElementById('testSound').addEventListener('click', () => {
-    new Audio('assets/sounds/apple-bite-chew-40.mp3').play();
-});
+// [CHANGED] Remove testSound button logic as sound is handled by background
+// document.getElementById('testSound').addEventListener('click', () => {
+//     new Audio('assets/sounds/apple-bite-chew-40.mp3').play();
+// });

@@ -9,6 +9,7 @@ let timeLeft = null; // Initialize after loading settings
 let pomodoroCount = 0;
 let isPaused = true;
 let userSettings = {};
+let offscreenDocumentId = null;
 
 function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
@@ -53,7 +54,6 @@ async function handleSessionEnd() {
     let notificationMessage = '';
     let nextMode = '';
     let newTime = 0;
-    let soundFile = '';
 
     if (currentMode === 'work') {
         pomodoroCount++;
@@ -61,25 +61,27 @@ async function handleSessionEnd() {
         notificationMessage = 'Time for a break!';
         nextMode = pomodoroCount % userSettings.pomodoroCountForLongBreak === 0 ? 'long-break' : 'short-break';
         newTime = nextMode === 'long-break' ? userSettings.longBreakTime : userSettings.shortBreakTime;
-        soundFile = 'assets/sounds/apple-bite-chew-40.mp3'; // Play for work (pomodoro) end
     } else {
         notificationTitle = 'Break over!';
         notificationMessage = 'Back to work!';
         nextMode = 'work';
         newTime = userSettings.workTime;
-        soundFile = 'assets/sounds/rooster-crowing.mp3'; // Play for break (doro) end
     }
 
     currentMode = nextMode;
     timeLeft = newTime * 60;
     isPaused = true;
 
-    // Send message to play sound with the appropriate file
-    chrome.runtime.sendMessage({
-        action: 'playSoundNotification',
-        mode: currentMode,
-        soundFile: soundFile
-    }).catch(e => console.error("Error sending sound notification:", e));
+    // [CHANGED] Send message to offscreen document to play sound
+    if (offscreenDocumentId) {
+        chrome.runtime.sendMessage({
+            action: 'playSound',
+            mode: currentMode,
+            volume: userSettings.soundVolume || 1.0
+        }).catch(e => console.error("Failed to send playSound message:", e));
+    } else {
+        console.error("Offscreen document not created");
+    }
 
     try {
         chrome.notifications.create({
@@ -94,6 +96,27 @@ async function handleSessionEnd() {
     }
 
     await saveTimerState();
+}
+
+async function createOffscreenDocument() {
+    if (offscreenDocumentId) {
+        try {
+            await chrome.offscreen.closeDocument();
+        } catch (e) {
+            console.error("Error closing existing offscreen document:", e);
+        }
+    }
+    try {
+        await chrome.offscreen.createDocument({
+            url: 'offscreen.html',
+            reasons: ['AUDIO_PLAYBACK'],
+            justification: 'Playing audio notifications for Pom-or-doro timer'
+        });
+        offscreenDocumentId = 'audio-offscreen';
+        console.log("Offscreen document created");
+    } catch (e) {
+        console.error("Failed to create offscreen document:", e);
+    }
 }
 
 async function loadSettings() {
@@ -235,13 +258,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             console.log("Received message:", request.action);
             switch (request.action) {
                 case 'start':
-                    // [CHANGED] Preload audio files to address autoplay restriction
-                    const audioWork = new Audio(chrome.runtime.getURL('assets/sounds/apple-bite-chew-40.mp3'));
-                    const audioBreak = new Audio(chrome.runtime.getURL('assets/sounds/rooster-crowing.mp3'));
-                    audioWork.preload = 'auto';
-                    audioBreak.preload = 'auto';
-                    globalThis.notificationAudioWork = audioWork;
-                    globalThis.notificationAudioBreak = audioBreak;
+                    // [CHANGED] Create offscreen document and preload audio
+                    await createOffscreenDocument();
+                    chrome.runtime.sendMessage({
+                        action: 'preloadAudio',
+                        workUrl: chrome.runtime.getURL('assets/sounds/apple-bite-chew-40.mp3'),
+                        breakUrl: chrome.runtime.getURL('assets/sounds/rooster-crowing.mp3'),
+                        volume: userSettings.soundVolume || 1.0
+                    }).catch(e => console.error("Failed to send preloadAudio message:", e));
                     startTimerInterval();
                     sendResponse({});
                     break;
@@ -273,16 +297,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     sendResponse({});
                     break;
                 case 'playSoundNotification':
-                    // [CHANGED] Use preloaded audio instances to play the sound
-                    const audio = request.soundFile === 'assets/sounds/apple-bite-chew-40.mp3' ? globalThis.notificationAudioWork : globalThis.notificationAudioBreak;
-                    if (audio) {
-                        try {
-                            await audio.play();
-                            console.log("Sound played successfully in response to playSoundNotification:", request.soundFile);
-                        } catch (e) {
-                            console.error("Audio play failed in playSoundNotification:", e);
-                        }
-                    }
+                    // [CHANGED] Remove this case as sound is handled via offscreen
                     sendResponse({});
                     break;
                 default:
