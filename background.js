@@ -57,13 +57,13 @@ async function handleSessionEnd() {
 
     if (currentMode === 'work') {
         pomodoroCount++;
-        notificationTitle = 'Work session complete!';
-        notificationMessage = 'Time for a break!';
+        notificationTitle = 'Work Session Complete';
+        notificationMessage = 'Time for a break. Click to continue.';
         nextMode = pomodoroCount % userSettings.pomodoroCountForLongBreak === 0 ? 'long-break' : 'short-break';
         newTime = nextMode === 'long-break' ? userSettings.longBreakTime : userSettings.shortBreakTime;
     } else {
-        notificationTitle = 'Break over!';
-        notificationMessage = 'Back to work!';
+        notificationTitle = 'Break Over';
+        notificationMessage = 'Time to work. Click to continue.';
         nextMode = 'work';
         newTime = userSettings.workTime;
     }
@@ -72,25 +72,39 @@ async function handleSessionEnd() {
     timeLeft = newTime * 60;
     isPaused = true;
 
-    // [CHANGED] Send message to offscreen document to play sound
+    // [CHANGED] Enhanced logging and attempt auto-open (may fail due to policy)
     if (offscreenDocumentId) {
+        console.log("Sending playSound message for mode:", currentMode);
         chrome.runtime.sendMessage({
             action: 'playSound',
             mode: currentMode,
             volume: userSettings.soundVolume || 1.0
-        }).catch(e => console.error("Failed to send playSound message:", e));
+        }).then(() => console.log("playSound message sent"))
+          .catch(e => console.error("Failed to send playSound message:", e));
     } else {
-        console.error("Offscreen document not created");
+        console.error("Offscreen document not available, sound playback disabled");
     }
 
     try {
-        chrome.notifications.create({
+        // Create notification with click action to open popup
+        const notificationId = 'sessionEnd_' + Date.now();
+        chrome.notifications.create(notificationId, {
             type: 'basic',
             iconUrl: 'assets/images/pomordoro.png',
             title: notificationTitle,
             message: notificationMessage,
             priority: 2
         });
+        console.log("Notification created with ID:", notificationId);
+
+        // [ADDED] Attempt to auto-open popup (may be blocked by Chrome policy)
+        try {
+            console.log("Attempting to auto-open popup");
+            chrome.action.openPopup();
+            console.log("Popup auto-open attempted");
+        } catch (e) {
+            console.warn("Auto-open failed due to Chrome policy:", e.message);
+        }
     } catch (e) {
         console.error("Error creating notification:", e);
     }
@@ -99,23 +113,35 @@ async function handleSessionEnd() {
 }
 
 async function createOffscreenDocument() {
+    // [CHANGED] Only close document if it exists, avoiding unnecessary error
     if (offscreenDocumentId) {
         try {
-            await chrome.offscreen.closeDocument();
+            const documents = await chrome.offscreen.getDocument();
+            if (documents && documents.length > 0) {
+                await chrome.offscreen.closeDocument();
+                console.log("Closed existing offscreen document");
+            } else {
+                console.log("No existing offscreen document to close");
+            }
         } catch (e) {
-            console.error("Error closing existing offscreen document:", e);
+            console.error("Error managing offscreen document:", e);
         }
     }
-    try {
-        await chrome.offscreen.createDocument({
-            url: 'offscreen.html',
-            reasons: ['AUDIO_PLAYBACK'],
-            justification: 'Playing audio notifications for Pom-or-doro timer'
-        });
-        offscreenDocumentId = 'audio-offscreen';
-        console.log("Offscreen document created");
-    } catch (e) {
-        console.error("Failed to create offscreen document:", e);
+    if (typeof chrome.offscreen?.createDocument === 'function') {
+        try {
+            await chrome.offscreen.createDocument({
+                url: 'offscreen.html',
+                reasons: ['AUDIO_PLAYBACK'],
+                justification: 'Playing audio notifications for Pom-or-doro timer'
+            });
+            offscreenDocumentId = 'audio-offscreen';
+            console.log("Offscreen document created successfully");
+        } catch (e) {
+            console.error("Failed to create offscreen document:", e);
+        }
+    } else {
+        console.error("Offscreen API not supported by this Chrome version, sound playback disabled");
+        offscreenDocumentId = null;
     }
 }
 
@@ -252,20 +278,31 @@ function skipBreak() {
     }
 }
 
+// [ADDED] Handle notification click to open popup (optional fallback)
+chrome.notifications.onClicked.addListener((notificationId) => {
+    console.log("Notification clicked, opening popup for ID:", notificationId);
+    chrome.action.openPopup();
+});
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     (async () => {
         try {
             console.log("Received message:", request.action);
             switch (request.action) {
                 case 'start':
-                    // [CHANGED] Create offscreen document and preload audio
+                    console.log("Attempting to create offscreen document");
                     await createOffscreenDocument();
-                    chrome.runtime.sendMessage({
-                        action: 'preloadAudio',
-                        workUrl: chrome.runtime.getURL('assets/sounds/apple-bite-chew-40.mp3'),
-                        breakUrl: chrome.runtime.getURL('assets/sounds/rooster-crowing.mp3'),
-                        volume: userSettings.soundVolume || 1.0
-                    }).catch(e => console.error("Failed to send preloadAudio message:", e));
+                    if (offscreenDocumentId) {
+                        console.log("Sending preloadAudio message");
+                        chrome.runtime.sendMessage({
+                            action: 'preloadAudio',
+                            workUrl: chrome.runtime.getURL('assets/sounds/apple-bite-chew-40.mp3'),
+                            breakUrl: chrome.runtime.getURL('assets/sounds/rooster-crowing.mp3'),
+                            volume: userSettings.soundVolume || 1.0
+                        }).catch(e => console.error("Failed to send preloadAudio message:", e));
+                    } else {
+                        console.error("Offscreen document not created, skipping audio preload");
+                    }
                     startTimerInterval();
                     sendResponse({});
                     break;
@@ -297,7 +334,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     sendResponse({});
                     break;
                 case 'playSoundNotification':
-                    // [CHANGED] Remove this case as sound is handled via offscreen
                     sendResponse({});
                     break;
                 default:
@@ -319,7 +355,6 @@ chrome.runtime.onInstalled.addListener(async () => {
     sendTimerUpdate();
 });
 
-// Add startup log to confirm service worker is running
 console.log("Service worker started at:", new Date().toISOString());
 
 (async () => {
