@@ -105,7 +105,7 @@ async function loadSettings() {
             longBreakTime: Number.isInteger(settings?.longBreakTime) && settings.longBreakTime > 0 ? settings.longBreakTime : DEFAULT_LONG_BREAK,
             pomodoroCountForLongBreak: Number.isInteger(settings?.pomodoroCountForLongBreak) && settings.pomodoroCountForLongBreak > 0 ? settings.pomodoroCountForLongBreak : DEFAULT_POMODORO_COUNT_FOR_LONG_BREAK,
             soundVolume: typeof settings?.soundVolume === 'number' && settings.soundVolume >= 0 && settings.soundVolume <= 1 ? settings.soundVolume : 1.0,
-            theme: ['light', 'dark', 'ocean', 'forest', 'ethiopian'].includes(settings?.theme) ? settings.theme : 'light',
+            theme: ['light', 'dark', 'waillord', 'ivy', 'ethiopian'].includes(settings?.theme) ? settings.theme : 'light',
             language: ['en', 'am'].includes(settings?.language) ? settings.language : 'en'
         };
         console.log("Settings loaded:", userSettings);
@@ -235,6 +235,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             console.log("Received message:", request.action);
             switch (request.action) {
                 case 'start':
+                    // [CHANGED] Preload audio files to address autoplay restriction
+                    const audioWork = new Audio(chrome.runtime.getURL('assets/sounds/apple-bite-chew-40.mp3'));
+                    const audioBreak = new Audio(chrome.runtime.getURL('assets/sounds/rooster-crowing.mp3'));
+                    audioWork.preload = 'auto';
+                    audioBreak.preload = 'auto';
+                    globalThis.notificationAudioWork = audioWork;
+                    globalThis.notificationAudioBreak = audioBreak;
                     startTimerInterval();
                     sendResponse({});
                     break;
@@ -266,12 +273,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     sendResponse({});
                     break;
                 case 'playSoundNotification':
-                    const audio = new Audio(chrome.runtime.getURL(request.soundFile));
-                    try {
-                        await audio.play();
-                        console.log("Sound played successfully in response to playSoundNotification:", request.soundFile);
-                    } catch (e) {
-                        console.error("Audio play failed in playSoundNotification:", e);
+                    // [CHANGED] Use preloaded audio instances to play the sound
+                    const audio = request.soundFile === 'assets/sounds/apple-bite-chew-40.mp3' ? globalThis.notificationAudioWork : globalThis.notificationAudioBreak;
+                    if (audio) {
+                        try {
+                            await audio.play();
+                            console.log("Sound played successfully in response to playSoundNotification:", request.soundFile);
+                        } catch (e) {
+                            console.error("Audio play failed in playSoundNotification:", e);
+                        }
                     }
                     sendResponse({});
                     break;
