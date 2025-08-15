@@ -73,17 +73,30 @@ async function handleSessionEnd() {
     timeLeft = newTime * 60;
     isPaused = true;
 
-    // [CHANGED] Adjusted for service worker: Use a fallback audio approach since Audio is not defined
-    if (typeof Audio === 'undefined') {
-        console.warn("Audio API not available in service worker, sound playback skipped");
-    } else if (currentMode === 'work') {
-        const workAudio = new Audio(chrome.runtime.getURL('assets/sounds/apple-bite-chew-40.mp3'));
-        workAudio.volume = userSettings.soundVolume || 1.0;
-        workAudio.play().catch(e => console.error("Failed to play work audio:", e));
+    // [CHANGED] Revert to offscreen playSound mechanism
+    if (offscreenDocumentId && offscreenReady) {
+        console.log("Sending playSound message for mode:", currentMode);
+        chrome.runtime.sendMessage({
+            action: 'playSound',
+            mode: currentMode,
+            volume: userSettings.soundVolume || 1.0
+        }).then(() => console.log("playSound message sent"))
+          .catch(e => console.error("Failed to send playSound message:", e));
     } else {
-        const breakAudio = new Audio(chrome.runtime.getURL('assets/sounds/rooster-crowing.mp3'));
-        breakAudio.volume = userSettings.soundVolume || 1.0;
-        breakAudio.play().catch(e => console.error("Failed to play break audio:", e));
+        console.warn("Offscreen document not ready or unavailable, sound playback skipped. offscreenReady:", offscreenReady, "offscreenDocumentId:", offscreenDocumentId);
+        if (!offscreenDocumentId) {
+            await createOffscreenDocument(); // Attempt to recreate if not available
+            if (offscreenDocumentId && offscreenReady) {
+                console.log("Recreated offscreen document, resending playSound");
+                chrome.runtime.sendMessage({
+                    action: 'playSound',
+                    mode: currentMode,
+                    volume: userSettings.soundVolume || 1.0
+                }).catch(e => console.error("Failed to resend playSound message:", e));
+            } else {
+                console.error("Failed to recreate offscreen document or it’s not ready after recreation");
+            }
+        }
     }
 
     try {
