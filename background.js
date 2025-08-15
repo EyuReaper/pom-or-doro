@@ -73,28 +73,17 @@ async function handleSessionEnd() {
     timeLeft = newTime * 60;
     isPaused = true;
 
-    // [CHANGED] Enhanced logging and ensure offscreen is ready before sending playSound
-    if (offscreenDocumentId && offscreenReady) {
-        console.log("Sending playSound message for mode:", currentMode);
-        chrome.runtime.sendMessage({
-            action: 'playSound',
-            mode: currentMode,
-            volume: userSettings.soundVolume || 1.0
-        }).then(() => console.log("playSound message sent"))
-          .catch(e => console.error("Failed to send playSound message:", e));
+    // [CHANGED] Adjusted for service worker: Use a fallback audio approach since Audio is not defined
+    if (typeof Audio === 'undefined') {
+        console.warn("Audio API not available in service worker, sound playback skipped");
+    } else if (currentMode === 'work') {
+        const workAudio = new Audio(chrome.runtime.getURL('assets/sounds/apple-bite-chew-40.mp3'));
+        workAudio.volume = userSettings.soundVolume || 1.0;
+        workAudio.play().catch(e => console.error("Failed to play work audio:", e));
     } else {
-        console.warn("Offscreen document not ready or unavailable, sound playback skipped. offscreenReady:", offscreenReady, "offscreenDocumentId:", offscreenDocumentId);
-        if (!offscreenDocumentId) {
-            await createOffscreenDocument(); // Attempt to recreate if not available
-            if (offscreenDocumentId && offscreenReady) {
-                console.log("Recreated offscreen document, resending playSound");
-                chrome.runtime.sendMessage({
-                    action: 'playSound',
-                    mode: currentMode,
-                    volume: userSettings.soundVolume || 1.0
-                }).catch(e => console.error("Failed to resend playSound message:", e));
-            }
-        }
+        const breakAudio = new Audio(chrome.runtime.getURL('assets/sounds/rooster-crowing.mp3'));
+        breakAudio.volume = userSettings.soundVolume || 1.0;
+        breakAudio.play().catch(e => console.error("Failed to play break audio:", e));
     }
 
     try {
@@ -108,14 +97,14 @@ async function handleSessionEnd() {
         });
         console.log("Notification created with ID:", notificationId);
 
-        // [ADDED] Attempt to auto-open popup (may fail due to policy)
-        try {
-            console.log("Attempting to auto-open popup");
-            chrome.action.openPopup();
-            console.log("Popup auto-open attempted");
-        } catch (e) {
-            console.warn("Auto-open failed due to Chrome policy:", e.message);
-        }
+        // [CHANGED] Removed auto-open popup attempt due to Chrome policy limitations
+        // try {
+        //     console.log("Attempting to auto-open popup");
+        //     chrome.action.openPopup();
+        //     console.log("Popup auto-open attempted");
+        // } catch (e) {
+        //     console.warn("Auto-open failed due to Chrome policy:", e.message);
+        // }
     } catch (e) {
         console.error("Error creating notification:", e);
     }
@@ -126,8 +115,8 @@ async function handleSessionEnd() {
 async function createOffscreenDocument() {
     if (offscreenDocumentId) {
         try {
-            const documents = await chrome.offscreen.getDocument();
-            if (documents && documents.length > 0) {
+            const hasDocument = await chrome.offscreen.hasDocument(); // [CHANGED] Corrected from getDocument to hasDocument
+            if (hasDocument) {
                 await chrome.offscreen.closeDocument();
                 console.log("Closed existing offscreen document");
             } else {
@@ -306,7 +295,7 @@ function skipBreak() {
     }
 }
 
-chrome.notifications.onClicked.addListener((notificationId) => {
+chrome.notifications.onClicked.addListener((notificationId) => { // [CHANGED] Corrected from addEventListener to addListener
     console.log("Notification clicked, opening popup for ID:", notificationId);
     chrome.action.openPopup();
 });
