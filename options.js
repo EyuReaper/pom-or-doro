@@ -125,6 +125,8 @@ resetBtn.addEventListener('click', () => {
         applyTheme(DEFAULT_SETTINGS.theme);
         applyLanguage(DEFAULT_SETTINGS.language);
         chrome.runtime.sendMessage({ action: 'saveSettings', settings: DEFAULT_SETTINGS });
+        // Send themeChanged message after resetting theme
+        chrome.runtime.sendMessage({ action: 'themeChanged' });
         showStatusMessage({ en: 'Settings reset to defaults!', am: 'ቅንብሮች ወደ ቀድሞ ተመልሰዋል!' }, DEFAULT_SETTINGS.language);
     });
 });
@@ -144,5 +146,7 @@ themeSelect.addEventListener('change', () => {
     applyTheme(theme);
     chrome.storage.sync.set({ theme }, () => {
         chrome.runtime.sendMessage({ action: 'saveSettings', settings: { theme } });
+        // Send themeChanged message after theme change
+        chrome.runtime.sendMessage({ action: 'themeChanged' });
     });
 });
