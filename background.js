@@ -10,12 +10,64 @@ let pomodoroCount = 0;
 let isPaused = true;
 let userSettings = {};
 let offscreenDocumentId = null;
-let offscreenReady = false; // [ADDED] Track offscreen document readiness
+let offscreenReady = false; // Track offscreen document readiness
+
+// Theme color map for icon
+const themeColors = {
+    'light': { bg: '#f5f7fa', text: '#1a1a1a' },
+    'dark': { bg: '#1e1e1e', text: '#e0e0e0' },
+    'waillord': { bg: '#D7CFE4', text: '#282C3C' },
+    'ivy': { bg: '#4DAEAC', text: '#203430' },
+    'ethiopian': { bg: '#006241', text: '#FFFFFF' }
+};
 
 function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+}
+
+function updateIcon(time) {
+    // Use OffscreenCanvas instead of document.createElement
+    const canvas = new OffscreenCanvas(32, 32); // 32x32 pixel icon
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+        console.error("Failed to get 2D context for OffscreenCanvas");
+        return;
+    }
+
+    // Get theme colors based on userSettings.theme, fallback to 'light' if not found
+    const theme = themeColors[userSettings.theme] || themeColors['light'];
+    const bgColor = theme.bg;
+    const textColor = theme.text;
+
+    // Clear canvas with theme background
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Add semi-transparent overlay for contrast (optional, adjust opacity as needed)
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; // 30% opacity black overlay
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Set text properties with theme text color
+    ctx.fillStyle = textColor;
+    ctx.font = '12px Arial'; // Adjust font size to fit
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Draw timer text
+    const timeStr = formatTime(time);
+    ctx.fillText(timeStr, canvas.width / 2, canvas.height / 2);
+
+    // Get ImageData directly from the canvas
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+    // Set the icon using ImageData
+    chrome.action.setIcon({
+        imageData: imageData
+    }).catch(e => console.error("Failed to update icon:", e));
 }
 
 function sendTimerUpdate() {
@@ -42,10 +94,12 @@ async function updateTimerState() {
     }
     if (timeLeft > 0) {
         timeLeft--;
+        updateIcon(timeLeft); // Update icon with current time
     } else {
         clearInterval(timerIntervalId);
         timerIntervalId = null;
         await handleSessionEnd();
+        updateIcon(0); // Show 00:00 when timer ends
     }
     sendTimerUpdate();
 }
@@ -73,7 +127,6 @@ async function handleSessionEnd() {
     timeLeft = newTime * 60;
     isPaused = true;
 
-    // [CHANGED] Revert to offscreen playSound mechanism
     if (offscreenDocumentId && offscreenReady) {
         console.log("Sending playSound message for mode:", currentMode);
         chrome.runtime.sendMessage({
@@ -85,7 +138,7 @@ async function handleSessionEnd() {
     } else {
         console.warn("Offscreen document not ready or unavailable, sound playback skipped. offscreenReady:", offscreenReady, "offscreenDocumentId:", offscreenDocumentId);
         if (!offscreenDocumentId) {
-            await createOffscreenDocument(); // Attempt to recreate if not available
+            await createOffscreenDocument();
             if (offscreenDocumentId && offscreenReady) {
                 console.log("Recreated offscreen document, resending playSound");
                 chrome.runtime.sendMessage({
@@ -109,15 +162,6 @@ async function handleSessionEnd() {
             priority: 2
         });
         console.log("Notification created with ID:", notificationId);
-
-        // [CHANGED] Removed auto-open popup attempt due to Chrome policy limitations
-        // try {
-        //     console.log("Attempting to auto-open popup");
-        //     chrome.action.openPopup();
-        //     console.log("Popup auto-open attempted");
-        // } catch (e) {
-        //     console.warn("Auto-open failed due to Chrome policy:", e.message);
-        // }
     } catch (e) {
         console.error("Error creating notification:", e);
     }
@@ -128,7 +172,7 @@ async function handleSessionEnd() {
 async function createOffscreenDocument() {
     if (offscreenDocumentId) {
         try {
-            const hasDocument = await chrome.offscreen.hasDocument(); // [CHANGED] Corrected from getDocument to hasDocument
+            const hasDocument = await chrome.offscreen.hasDocument();
             if (hasDocument) {
                 await chrome.offscreen.closeDocument();
                 console.log("Closed existing offscreen document");
@@ -149,13 +193,12 @@ async function createOffscreenDocument() {
             offscreenDocumentId = 'audio-offscreen';
             console.log("Offscreen document created successfully");
 
-            // [ADDED] Wait for offscreen to be ready by sending a ping
             return new Promise(resolve => {
                 const checkReady = () => {
                     chrome.runtime.sendMessage({ action: 'pingOffscreen' }, response => {
                         if (chrome.runtime.lastError) {
                             console.warn("Offscreen not ready yet, retrying...", chrome.runtime.lastError);
-                            setTimeout(checkReady, 100); // Retry after 100ms
+                            setTimeout(checkReady, 100);
                         } else {
                             offscreenReady = true;
                             console.log("Offscreen document is ready");
@@ -190,6 +233,7 @@ async function loadSettings() {
         console.log("Settings loaded:", userSettings);
         if (timeLeft === null) {
             timeLeft = userSettings.workTime * 60;
+            updateIcon(timeLeft); // Set initial icon
         }
     } catch (error) {
         console.error("Error loading settings:", error);
@@ -203,6 +247,7 @@ async function loadSettings() {
             language: 'en'
         };
         timeLeft = userSettings.workTime * 60;
+        updateIcon(timeLeft); // Set initial icon
     }
 }
 
@@ -216,6 +261,7 @@ async function saveSettings(newSettings) {
             const timeKey = currentMode === 'work' ? 'workTime' : currentMode === 'short-break' ? 'shortBreakTime' : 'longBreakTime';
             if (newSettings[timeKey] !== undefined) {
                 timeLeft = userSettings[timeKey] * 60;
+                updateIcon(timeLeft); // Update icon on settings change
                 sendTimerUpdate();
             }
         }
@@ -236,12 +282,14 @@ async function loadTimerState() {
             if (!isPaused) {
                 startTimerInterval();
             }
+            updateIcon(timeLeft); // Update icon on load
         } else {
             console.log("No valid timer state found, initializing defaults");
             timeLeft = userSettings.workTime * 60;
             currentMode = 'work';
             pomodoroCount = 0;
             isPaused = true;
+            updateIcon(timeLeft); // Update icon on reset
         }
     } catch (error) {
         console.error("Error loading timer state:", error);
@@ -249,6 +297,7 @@ async function loadTimerState() {
         currentMode = 'work';
         pomodoroCount = 0;
         isPaused = true;
+        updateIcon(timeLeft); // Update icon on error
     }
 }
 
@@ -269,6 +318,7 @@ function startTimerInterval() {
         timerIntervalId = setInterval(updateTimerState, 1000);
         saveTimerState();
         sendTimerUpdate();
+        updateIcon(timeLeft); // Update icon on start
     } else if (!isPaused) {
         console.warn("Timer already running, ignoring start request");
     }
@@ -281,6 +331,7 @@ function pauseTimer() {
     isPaused = true;
     saveTimerState();
     sendTimerUpdate();
+    updateIcon(timeLeft); // Update icon on pause
 }
 
 function resetTimer(save = true) {
@@ -294,6 +345,7 @@ function resetTimer(save = true) {
         saveTimerState();
     }
     sendTimerUpdate();
+    updateIcon(timeLeft); // Update icon on reset
 }
 
 function skipBreak() {
@@ -305,10 +357,11 @@ function skipBreak() {
         timeLeft = userSettings.workTime * 60;
         saveTimerState();
         sendTimerUpdate();
+        updateIcon(timeLeft); // Update icon on skip
     }
 }
 
-chrome.notifications.onClicked.addListener((notificationId) => { // [CHANGED] Corrected from addEventListener to addListener
+chrome.notifications.onClicked.addListener((notificationId) => {
     console.log("Notification clicked, opening popup for ID:", notificationId);
     chrome.action.openPopup();
 });
@@ -363,6 +416,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     await saveSettings(request.settings);
                     sendResponse({});
                     break;
+                case 'themeChanged':
+                    updateIcon(timeLeft); // Immediate update on theme change from options
+                    sendResponse({});
+                    break;
                 case 'playSoundNotification':
                     sendResponse({});
                     break;
@@ -409,8 +466,12 @@ chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'sync' && changes.settings) {
         userSettings = { ...userSettings, ...changes.settings.newValue };
         console.log("Settings updated via storage change:", userSettings);
-        if (isPaused) {
-            timeLeft = userSettings[currentMode === 'work' ? 'workTime' : currentMode === 'short-break' ? 'shortBreakTime' : 'longBreakTime'] * 60;
+        const timeKey = currentMode === 'work' ? 'workTime' : currentMode === 'short-break' ? 'shortBreakTime' : 'longBreakTime';
+        if (changes.settings.newValue.theme !== undefined) {
+            updateIcon(timeLeft); // Update icon on theme change
+        } else if (changes.settings.newValue[timeKey] !== undefined && isPaused) {
+            timeLeft = userSettings[timeKey] * 60;
+            updateIcon(timeLeft); // Update icon on time settings change if paused
             sendTimerUpdate();
         }
     }
