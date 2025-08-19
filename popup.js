@@ -184,7 +184,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         console.log('Received timer update:', msg);
         updateDisplay(msg);
     }
-    // [CHANGED] Remove playSoundNotification handler as background handles it
     sendResponse();
 });
 
@@ -195,7 +194,6 @@ if (selectors.startBtn) {
         chrome.runtime.sendMessage({ action: 'start' }, (response) => {
             if (chrome.runtime.lastError) {
                 console.error('Failed to start timer:', chrome.runtime.lastError.message);
-                // Retry once if connection fails
                 if (chrome.runtime.lastError.message.includes("Receiving end does not exist")) {
                     console.log("Retrying start message...");
                     chrome.runtime.sendMessage({ action: 'start' }, (retryResponse) => {
@@ -210,7 +208,6 @@ if (selectors.startBtn) {
                 console.log('Start message sent successfully');
             }
         });
-        // Force service worker activation with persistent connection
         const port = chrome.runtime.connect({ name: 'activateWorker' });
         port.postMessage({ action: 'ping' });
         port.onMessage.addListener((msg) => {
@@ -259,7 +256,11 @@ if (selectors.themeSelect) {
         const theme = selectors.themeSelect.value;
         applyTheme(theme);
         settings.theme = theme;
-        chrome.storage.sync.set({ theme });
+        chrome.storage.sync.set({ theme }, () => {
+            chrome.runtime.sendMessage({ action: 'saveSettings', settings: { theme } });
+            // Send themeChanged message to update icon
+            chrome.runtime.sendMessage({ action: 'themeChanged' });
+        });
     });
 }
 
@@ -268,7 +269,9 @@ if (selectors.languageSelect) {
         const language = selectors.languageSelect.value;
         applyLanguage(language);
         settings.language = language;
-        chrome.storage.sync.set({ language });
+        chrome.storage.sync.set({ language }, () => {
+            chrome.runtime.sendMessage({ action: 'saveSettings', settings: { language } });
+        });
     });
 }
 
@@ -354,8 +357,3 @@ function trapFocus(modal) {
         }
     });
 }
-
-// [CHANGED] Remove testSound button logic as sound is handled by background
-// document.getElementById('testSound').addEventListener('click', () => {
-//     new Audio('assets/sounds/apple-bite-chew-40.mp3').play();
-// });
