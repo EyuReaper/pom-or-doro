@@ -476,3 +476,11 @@ chrome.storage.onChanged.addListener((changes, area) => {
         }
     }
 });
+
+chrome.action.onClicked.addListener(() => {
+    chrome.sidePanel.setOptions({
+        path: 'side_panel.html',
+        enabled: true
+    });
+    chrome.sidePanel.open({ windowId: chrome.windows.WINDOW_ID_CURRENT });
+});

@@ -10,7 +10,8 @@
   "permissions": [
     "storage",
     "notifications",
-    "offscreen"
+    "offscreen",
+    "sidePanel"
   ],
   "icons": {
     "16": "assets/images/pomordoro.png",
@@ -30,10 +31,13 @@
         "assets/images/*",
         "css/popup.css",
         "offscreen.html",
-        "offscreen.js"
+        "offscreen.js",
+        "side_panel.html", "css/side_panel.css", "side_panel.js"
       ],
       "matches": ["<all_urls>"]
     }
-  ],
+  ],"side_panel": {
+    "default_path": "side_panel.html"
+  },
   "default_locale": "en"
 }
