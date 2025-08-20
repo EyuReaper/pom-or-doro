@@ -309,16 +309,29 @@ function startTimerInterval() {
 
 async function checkAndOpenPopupOrNotify() {
     try {
-        const [currentWindow] = await chrome.windows.getAll({ populate: false, windowTypes: ['normal'] });
-        if (currentWindow) {
+        // First, try to get any normal window
+        const windows = await chrome.windows.getAll({ populate: false, windowTypes: ['normal'] });
+        if (windows.length > 0) {
             chrome.action.openPopup().catch((error) => {
                 console.error("Failed to open popup as fallback:", error);
                 showFallbackNotification();
             });
-        } else {
-            console.warn("No active window found, showing notification instead");
-            showFallbackNotification();
+            return;
         }
+
+        // If no normal windows, try the last focused window
+        const lastFocusedWindow = await chrome.windows.getLastFocused({ windowTypes: ['normal'] }).catch(() => null);
+        if (lastFocusedWindow) {
+            chrome.action.openPopup().catch((error) => {
+                console.error("Failed to open popup as fallback:", error);
+                showFallbackNotification();
+            });
+            return;
+        }
+
+        // If still no window, show notification
+        console.warn("No active or last focused window found, showing notification instead");
+        showFallbackNotification();
     } catch (error) {
         console.error("Error checking windows:", error);
         showFallbackNotification();
