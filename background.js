@@ -11,6 +11,7 @@ let isPaused = true;
 let userSettings = {};
 let offscreenDocumentId = null;
 let offscreenReady = false; // Track offscreen document readiness
+let pendingPopup = false; // Flag to track pending popup request
 
 // Theme color map for icon (used only when timer is running)
 const themeColors = {
@@ -35,6 +36,7 @@ function updateIcon(time) {
 
         if (!ctx) {
             console.error("Failed to get 2D context for OffscreenCanvas");
+            setDefaultIcon();
             return;
         }
 
@@ -54,13 +56,27 @@ function updateIcon(time) {
         const timeStr = formatTime(time);
         ctx.fillText(timeStr, canvas.width / 2, canvas.height / 2);
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        chrome.action.setIcon({ imageData }).catch(e => console.error("Failed to update icon:", e));
+        if (imageData.data.length !== 32 * 32 * 4) {
+            console.error("Invalid imageData length:", imageData.data.length);
+            setDefaultIcon();
+            return;
+        }
+        chrome.action.setIcon({ imageData }).catch(e => {
+            console.error("Failed to set dynamic icon with imageData:", e);
+            setDefaultIcon();
+        });
     }
 }
 
 function setDefaultIcon() {
     // Set the original icon from assets
-    chrome.action.setIcon({ path: 'assets/images/pomordoro.png' }).catch(e => console.error("Failed to set default icon:", e));
+    chrome.action.setIcon({ path: 'assets/images/pomordoro.png' }).catch(e => {
+        console.error("Failed to set default icon from path 'assets/images/pomordoro.png':", e);
+        // Fallback to a built-in icon
+        chrome.action.setIcon({ path: 'icon16.png' }).catch(e => {
+            console.error("Failed to set fallback icon 'icon16.png':", e);
+        });
+    });
 }
 
 function sendTimerUpdate() {
@@ -291,15 +307,16 @@ function startTimerInterval() {
         timerIntervalId = setInterval(updateTimerState, 1000);
         saveTimerState();
         sendTimerUpdate();
-        // Open side panel with fallback
+        // Open side panel if supported, otherwise trigger notification
         if (typeof chrome.sidePanel?.setOptions === 'function') {
             chrome.sidePanel.setOptions({ path: 'side_panel.html', enabled: true });
             chrome.sidePanel.open({ windowId: chrome.windows.WINDOW_ID_CURRENT }).catch((error) => {
                 console.error("Failed to open side panel on session start:", error);
+                showSessionNotification();
             });
         } else {
             console.warn("Side Panel API not supported");
-            checkAndOpenPopupOrNotify();
+            showSessionNotification();
         }
         updateIcon(timeLeft); // Switch to timer icon when session starts
     } else if (!isPaused) {
@@ -307,46 +324,42 @@ function startTimerInterval() {
     }
 }
 
-async function checkAndOpenPopupOrNotify() {
-    try {
-        // First, try to get any normal window
-        const windows = await chrome.windows.getAll({ populate: false, windowTypes: ['normal'] });
-        if (windows.length > 0) {
-            chrome.action.openPopup().catch((error) => {
-                console.error("Failed to open popup as fallback:", error);
-                showFallbackNotification();
-            });
-            return;
+function showSessionNotification() {
+    chrome.windows.getAll({ populate: false, windowTypes: ['normal'] }, (windows) => {
+        if (chrome.runtime.lastError) {
+            console.error("Error checking windows:", chrome.runtime.lastError);
+            triggerNotification();
+        } else if (windows.length > 0) {
+            pendingPopup = true; // Set flag to attempt popup when window is detected
+            console.log("Window detected, setting up popup on next window creation");
+        } else {
+            triggerNotification();
         }
-
-        // If no normal windows, try the last focused window
-        const lastFocusedWindow = await chrome.windows.getLastFocused({ windowTypes: ['normal'] }).catch(() => null);
-        if (lastFocusedWindow) {
-            chrome.action.openPopup().catch((error) => {
-                console.error("Failed to open popup as fallback:", error);
-                showFallbackNotification();
-            });
-            return;
-        }
-
-        // If still no window, show notification
-        console.warn("No active or last focused window found, showing notification instead");
-        showFallbackNotification();
-    } catch (error) {
-        console.error("Error checking windows:", error);
-        showFallbackNotification();
-    }
+    });
 }
 
-function showFallbackNotification() {
-    chrome.notifications.create('noWindow_' + Date.now(), {
+function triggerNotification() {
+    const notificationId = 'sessionStart_' + Date.now();
+    chrome.notifications.create(notificationId, {
         type: 'basic',
         iconUrl: 'assets/images/pomordoro.png',
         title: 'Session Started',
-        message: 'The timer has started, but no window was available to show the popup. Check the extension icon.',
+        message: 'The timer has started. Check the extension icon for details.',
         priority: 2
-    }).catch(e => console.error("Failed to create fallback notification:", e));
+    }).catch(e => console.error("Failed to create session notification:", e));
 }
+
+chrome.windows.onCreated.addListener(() => {
+    if (pendingPopup) {
+        chrome.action.openPopup().then(() => {
+            console.log("Popup opened after window creation");
+            pendingPopup = false;
+        }).catch((error) => {
+            console.error("Failed to open popup after window creation:", error);
+            showSessionNotification(); // Fallback to notification
+        });
+    }
+});
 
 function pauseTimer() {
     if (isPaused) return;
@@ -505,9 +518,9 @@ chrome.action.onClicked.addListener(() => {
         });
         chrome.sidePanel.open({ windowId: chrome.windows.WINDOW_ID_CURRENT }).catch((error) => {
             console.error("Failed to open side panel:", error);
-            checkAndOpenPopupOrNotify();
+            showSessionNotification();
         });
     } else {
-        checkAndOpenPopupOrNotify();
+        showSessionNotification();
     }
 });
