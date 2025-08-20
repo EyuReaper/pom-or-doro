@@ -3,6 +3,7 @@
   "name": "Pom-or-doro",
   "version": "1.0.0",
   "description": "A Pomodoro timer made by an Ethiopian Chrome extension",
+  "default_locale": "en",  
   "action": {
     "default_popup": "popup.html"
   },
@@ -32,12 +33,14 @@
         "css/popup.css",
         "offscreen.html",
         "offscreen.js",
-        "side_panel.html", "css/side_panel.css", "side_panel.js"
+        "side_panel.html",
+        "css/side_panel.css",
+        "side_panel.js"
       ],
       "matches": ["<all_urls>"]
     }
-  ],"side_panel": {
+  ],
+  "side_panel": {
     "default_path": "side_panel.html"
-  },
-  "default_locale": "en"
+  }
 }
