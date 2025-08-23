@@ -22,6 +22,12 @@ const themeColors = {
     'ethiopian': { bg: '#006241', text: '#FFFFFF' }
 };
 
+// Predefined icon paths based on time
+const iconPaths = {
+    'default': 'assets/images/pomordoro.png',
+    'fallback': 'icon16.png'
+};
+
 function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -29,52 +35,28 @@ function formatTime(seconds) {
 }
 
 function updateIcon(time) {
-    // Only generate dynamic icon if timer is running
+    // Use static icons with text overlay only if running
     if (!isPaused) {
-        const canvas = new OffscreenCanvas(32, 32);
-        const ctx = canvas.getContext('2d');
-
-        if (!ctx) {
-            console.error("Failed to get 2D context for OffscreenCanvas");
-            setDefaultIcon();
-            return;
-        }
-
-        const theme = themeColors[userSettings.theme] || themeColors['light'];
-        const bgColor = theme.bg;
-        const textColor = theme.text;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = textColor;
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
         const timeStr = formatTime(time);
-        ctx.fillText(timeStr, canvas.width / 2, canvas.height / 2);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        if (imageData.data.length !== 32 * 32 * 4) {
-            console.error("Invalid imageData length:", imageData.data.length);
-            setDefaultIcon();
-            return;
-        }
-        chrome.action.setIcon({ imageData }).catch(e => {
-            console.error("Failed to set dynamic icon with imageData:", e);
+        const theme = themeColors[userSettings.theme] || themeColors['light'];
+        const iconKey = timeStr.replace(/:/g, ''); // Convert to a simple key (e.g., "2500" for 25:00)
+
+        // Try to use a pregenerated icon if available, fallback to default
+        const iconPath = iconPaths[iconKey] || iconPaths['default'];
+        chrome.action.setIcon({ path: iconPath }).catch(e => {
+            console.error(`Failed to set icon for time ${timeStr} with path ${iconPath}:`, e);
             setDefaultIcon();
         });
     }
 }
 
 function setDefaultIcon() {
-    // Set the original icon from assets
-    chrome.action.setIcon({ path: 'assets/images/pomordoro.png' }).catch(e => {
-        console.error("Failed to set default icon from path 'assets/images/pomordoro.png':", e);
-        // Fallback to a built-in icon
-        chrome.action.setIcon({ path: 'icon16.png' }).catch(e => {
-            console.error("Failed to set fallback icon 'icon16.png':", e);
+    // Set the default icon with a robust fallback chain
+    chrome.action.setIcon({ path: iconPaths['default'] }).catch(e => {
+        console.error(`Failed to set default icon ${iconPaths['default']}:`, e);
+        chrome.action.setIcon({ path: iconPaths['fallback'] }).catch(e => {
+            console.error(`Failed to set fallback icon ${iconPaths['fallback']}:`, e);
+            console.warn("All icon attempts failed, icon will be missing");
         });
     });
 }
@@ -136,6 +118,12 @@ async function handleSessionEnd() {
     timeLeft = newTime * 60;
     isPaused = true;
 
+    // Collapse side panel and show popup notification
+    if (typeof chrome.sidePanel?.setPanelBehavior === 'function') {
+        chrome.sidePanel.setPanelBehavior({ openPanelOnAction: false }).catch(e => console.error("Failed to collapse side panel:", e));
+        chrome.runtime.sendMessage({ action: 'collapsePanel' });
+    }
+
     if (offscreenDocumentId && offscreenReady) {
         console.log("Sending playSound message for mode:", currentMode);
         chrome.runtime.sendMessage({
@@ -165,7 +153,8 @@ async function handleSessionEnd() {
             iconUrl: 'assets/images/pomordoro.png',
             title: notificationTitle,
             message: notificationMessage,
-            priority: 2
+            priority: 2,
+            buttons: [{ title: "Show Panel" }]
         });
     } catch (e) {
         console.error("Error creating notification:", e);
@@ -401,6 +390,15 @@ chrome.notifications.onClicked.addListener((notificationId) => {
     chrome.action.openPopup();
 });
 
+chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
+    if (buttonIndex === 0) { // "Show Panel" button
+        if (typeof chrome.sidePanel?.setOptions === 'function') {
+            chrome.sidePanel.setOptions({ path: 'side_panel.html', enabled: true });
+            chrome.sidePanel.open({ windowId: chrome.windows.WINDOW_ID_CURRENT }).catch(e => console.error("Failed to open side panel from notification:", e));
+        }
+    }
+});
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     (async () => {
         try {
@@ -452,6 +450,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     sendResponse({});
                     break;
                 case 'playSoundNotification':
+                    sendResponse({});
+                    break;
+                case 'collapsePanel':
+                    if (typeof chrome.sidePanel?.setPanelBehavior === 'function') {
+                        chrome.sidePanel.setPanelBehavior({ openPanelOnAction: false }).catch(e => console.error("Failed to collapse side panel:", e));
+                    }
                     sendResponse({});
                     break;
                 default:

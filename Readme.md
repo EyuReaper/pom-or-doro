@@ -13,7 +13,7 @@ Stay on track with your tasks, receive timely notifications, and customize your 
 ![Preview Screenshot 1](assets/images/pomordoro_light.png).
 ![Preview Screenshot 1](assets/images/pomordoro_dark.png).
 ![Preview Screenshot 1](assets/images/pomordoro_settings.png).
-## ✨ Features
+## ✨ **Features**
 
 - **Customizable Pomodoro Timer:** Set your ideal work and break durations.
 - **Short & Long Breaks:** Differentiates between short and extended break periods.
